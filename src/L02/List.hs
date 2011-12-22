@@ -51,7 +51,8 @@ reduceLeft f (h :| t) = foldLeft f h t
 -- Elegance: 0.5 marks
 -- Total: 3
 headOr :: List a -> a -> a
-headOr = error "todo"
+headOr Nil a = a
+headOr (h:|_) _ = h
 
 -- Exercise 2
 -- Relative Difficulty: 2
@@ -60,7 +61,7 @@ headOr = error "todo"
 -- Elegance: 0.5 marks
 -- Total: 4
 sum :: List Int -> Int
-sum = error "todo"
+sum = foldLeft (+) 0
 
 -- Exercise 3
 -- Relative Difficulty: 2
@@ -69,7 +70,20 @@ sum = error "todo"
 -- Elegance: 0.5 marks
 -- Total: 4
 length :: List a -> Int
-length = error "todo"
+--length Nil = 0
+--length (_:|t) = 1 + length t
+--length list = foldLeft (\a _ -> a+1) 0 list
+--length = foldLeft (\a _ -> a+1) 0
+--length = foldLeft (\a _ -> succ a) 0
+-- *** length = foldLeft (succ const
+
+ignoreFirst :: a -> (b -> b) -> (b -> b)
+ignoreFirst _ = id
+
+temp :: (a -> a) -> (b -> a -> a)
+temp f = (\_ -> f)
+
+
 
 -- Exercise 4
 -- Relative Difficulty: 5
