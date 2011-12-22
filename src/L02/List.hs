@@ -87,8 +87,8 @@ map :: (a -> b) -> List a -> List b
 --map f = foldRight (\a b -> f a :| b) Nil
 --map f = foldRight (\a b -> (:|) (f a) b) Nil
 --map f = foldRight (\a -> (:|) (f a)) Nil
-map f = foldRight ((:|) . f) Nil
---map = flip (foldRight) Nil ((.) (:|))
+--map f = foldRight ((:|) . f) Nil
+map = flip foldRight Nil . ((:|) .)
 
 -- Exercise 5
 -- Relative Difficulty: 5
