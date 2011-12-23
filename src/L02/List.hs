@@ -131,7 +131,9 @@ flatten = foldRight append Nil
 -- Elegance: 1.5 mark
 -- Total: 8
 flatMap :: (a -> List b) -> List a -> List b
-flatMap = error "todo"
+--flatMap f l = flatten (foldRight (\a b -> f a :| b) Nil l)
+--flatMap f l = flatten (map f l)
+flatMap f = flatten . (map f)
 
 -- Exercise 9
 -- Relative Difficulty: 8
