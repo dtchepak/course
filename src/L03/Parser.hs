@@ -15,19 +15,21 @@ data Parser a = P {
 -- Return a parser that always succeeds
 -- with the given value and consumes no input.
 valueParser :: a -> Parser a
-valueParser = error "todo"
+--valueParser a = P { parse = (\i -> Value(i, a)) }
+valueParser a = P (\i -> Value (i, a))
 
 -- Exercise 2
 -- Return a parser that always fails
 -- with the given error.
 failed :: Err -> Parser a
-failed = error "todo"
+failed err = P (\_ -> Error err)
 
 -- Exercise 3
 -- Return a parser that succeeds with a character
 -- off the input or fails with an error if the input is empty.
 character :: Parser Char
-character = error "todo"
+character = P (\s -> case s of [] -> Error "input is empty"
+                               (h:t) -> Value (t, h))
 
 -- Exercise 4
 -- Return a parser that puts its input into the given parser and
@@ -35,7 +37,12 @@ character = error "todo"
 --     then put in the remaining input in the resulting parser.
 --   * if that parser fails with an error the returned parser fails with that error.
 bindParser :: Parser a -> (a -> Parser b) -> Parser b
-bindParser = error "todo"
+--bindParser p f = P (\input -> parseResult (parse p input))
+    --where parseResult (Value (i,a)) = parse (f a) i
+          --parseResult (Error e) = (Error e)
+bindParser (P p) f = P (\s -> case (p s) of Value (i,a) -> parse (f a) i
+                                            Error e -> Error e)
+                                                      
 
 -- Exercise 5
 -- Return a parser that puts its input into the given parser and
@@ -44,14 +51,16 @@ bindParser = error "todo"
 --   * if that parser fails with an error the returned parser fails with that error.
 -- ~~~ This function should call bindParser. ~~~
 (>>>) :: Parser a -> Parser b -> Parser b
-(>>>) = error "todo"
+--(>>>) (P a) (P b) = P (\s -> case (a s) of Value (i,_) -> b i
+--                                           Error e -> Error e)
+a >>> b = bindParser a (\_ -> b)
 
 -- Exercise 6
 -- Return a parser that tries the first parser for a successful value.
 --   * If the first parser succeeds then use this parser.
 --   * If the first parser fails, try the second parser.
 (|||) :: Parser a -> Parser a -> Parser a
-(|||) = error "todo"
+(P p) ||| (P q) = P (\s -> let first = (p s) in if isValue first then first else q s)
 
 infixl 3 |||
 
