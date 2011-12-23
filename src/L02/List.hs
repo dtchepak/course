@@ -142,7 +142,8 @@ flatMap f = flatten . (map f)
 -- Elegance: 2.5 marks
 -- Total: 9
 maximum :: List Int -> Int
-maximum = error "todo"
+maximum = foldLeft max minInt
+    where minInt = minBound :: Int
 
 -- Exercise 10
 -- Relative Difficulty: 10
@@ -151,7 +152,8 @@ maximum = error "todo"
 -- Elegance: 2.5 marks
 -- Total: 10
 reverse :: List a -> List a
-reverse = error "todo"
+--reverse = foldRight (\a b -> append b (a:|Nil)) Nil     <-- O(n^2)
+reverse = foldLeft (flip (:|)) Nil
 
 -- END Exercises
 
