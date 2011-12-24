@@ -68,7 +68,7 @@ infixl 3 |||
 -- Return a parser that continues producing a list of values from the given parser.
 -- ~~~ Use many1, valueParser and (|||). ~~~
 list :: Parser a -> Parser [a]
-list = error "todo"
+list p = many1 p ||| valueParser [] -- **** had to lookup answer
 
 -- Exercise 8
 -- Return a parser that produces at least one value from the given parser then
@@ -77,7 +77,10 @@ list = error "todo"
 --   * The input is empty
 -- ~~~ Use bindParser, list and value. ~~~
 many1 :: Parser a -> Parser [a]
-many1 = error "todo"
+--many1 p = bindParser p (P (\a 
+many1 k = bindParser k (\k' ->
+          bindParser (list k) (\kk' ->
+          valueParser (k' : kk'))) -- *** had to lookup answer
 
 -- Exercise 9
 -- Return a parser that produces a character but fails if
@@ -85,7 +88,7 @@ many1 = error "todo"
 --   * The character does not satisfy the given predicate.
 -- ~~~ The bindParser and character functions will be helpful here. ~~~
 satisfy :: (Char -> Bool) -> Parser Char
-satisfy = error "todo"
+satisfy pred = bindParser character (\c -> if pred c then valueParser c else failed ("unexpected " ++ [c])) -- *** had to lookup answer
 
 -- Exercise 10.1
 -- Return a parser that produces the given character but fails if
@@ -93,7 +96,8 @@ satisfy = error "todo"
 --   * The produced character is not equal to the given character.
 -- ~~~ Use the satisfy function. ~~~
 is :: Char -> Parser Char
-is = error "todo"
+--is c = satisfy (\c' -> c == c')
+is c = satisfy (c==)
 
 -- Exercise 10.2
 -- Return a parser that produces a character between '0' and '9' but fails if
@@ -101,7 +105,7 @@ is = error "todo"
 --   * The produced character is not a digit.
 -- ~~~ Use the satisfy and Data.Char.isDigit functions. ~~~
 digit :: Parser Char
-digit = error "todo"
+digit = satisfy Data.Char.isDigit
 
 -- Exercise 10.3
 -- Return a parser that produces zero or a positive integer but fails if
@@ -117,7 +121,7 @@ natural = error "todo"
 --   * The produced character is not a space.
 -- ~~~ Use the satisfy and Data.Char.isSpace functions. ~~~
 space :: Parser Char
-space = error "todo"
+space = satisfy isSpace
 
 -- Exercise 10.5
 -- Return a parser that produces one or more space characters
@@ -126,7 +130,7 @@ space = error "todo"
 --   * The first produced character is not a space.
 -- ~~~ Use the many1 and space functions. ~~~
 spaces1 :: Parser String
-spaces1 = error "todo"
+spaces1 = many1 space
 
 -- Exercise 10.6
 -- Return a parser that produces a lower-case character but fails if
@@ -134,7 +138,7 @@ spaces1 = error "todo"
 --   * The produced character is not lower-case.
 -- ~~~ Use the satisfy and Data.Char.isLower functions. ~~~
 lower :: Parser Char
-lower = error "todo"
+lower = satisfy isLower
 
 -- Exercise 10.7
 -- Return a parser that produces an upper-case character but fails if
@@ -142,7 +146,7 @@ lower = error "todo"
 --   * The produced character is not upper-case.
 -- ~~~ Use the satisfy and Data.Char.isUpper functions. ~~~
 upper :: Parser Char
-upper = error "todo"
+upper = satisfy isUpper
 
 -- Exercise 10.8
 -- Return a parser that produces an alpha character but fails if
@@ -150,7 +154,7 @@ upper = error "todo"
 --   * The produced character is not alpha.
 -- ~~~ Use the satisfy and Data.Char.isAlpha functions. ~~~
 alpha :: Parser Char
-alpha = error "todo"
+alpha = satisfy isAlpha
 
 -- Exercise 11
 -- Return a parser that sequences the given list of parsers by producing all their results
