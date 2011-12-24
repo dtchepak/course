@@ -77,7 +77,6 @@ list p = many1 p ||| valueParser [] -- **** had to lookup answer
 --   * The input is empty
 -- ~~~ Use bindParser, list and value. ~~~
 many1 :: Parser a -> Parser [a]
---many1 p = bindParser p (P (\a 
 many1 k = bindParser k (\k' ->
           bindParser (list k) (\kk' ->
           valueParser (k' : kk'))) -- *** had to lookup answer
@@ -113,7 +112,8 @@ digit = satisfy Data.Char.isDigit
 --   * The input does not produce a value series of digits
 -- ~~~ Use the bindParser, valueParser, list and digit functions. ~~~
 natural :: Parser Int
-natural = error "todo"
+natural = bindParser (list digit) (\k -> case reads k of []    -> failed "Failed to parse natural"
+                                                         ((h,_):_) -> valueParser h)
 
 -- Exercise 10.4
 -- Return a parser that produces a space character but fails if
@@ -162,7 +162,10 @@ alpha = satisfy isAlpha
 -- ~~~ Use bindParser and value. ~~~
 -- ~~~ Optionally use Prelude.foldr. If not, an explicit recursive call. ~~~
 sequenceParser :: [Parser a] -> Parser [a]
-sequenceParser = error "todo"
+sequenceParser [] = valueParser []
+sequenceParser (h:t) = bindParser h (\a ->
+                        bindParser (sequenceParser t) (\as ->
+                            valueParser (a : as)))
 
 -- Exercise 12
 -- Return a parser that produces the given number of values off the given parser.
@@ -170,35 +173,40 @@ sequenceParser = error "todo"
 --   * The given parser fails in the attempt to produce the given number of values.
 -- ~~~ Use sequenceParser and Prelude.replicate. ~~~
 thisMany :: Int -> Parser a -> Parser [a]
-thisMany = error "todo"
+thisMany n p = sequenceParser (replicate n p)
 
 -- Exercise 13
 -- Write a parser for Person.age.
 -- * Age: positive integer
 -- ~~~ Equivalent to natural. ~~~
 ageParser :: Parser Int
-ageParser = error "todo"
+ageParser = natural
 
 -- Exercise 14
 -- Write a parser for Person.firstName.
 -- * First Name: non-empty string that starts with a capital letter
 -- ~~~ Use bindParser, value, upper, list and lower. ~~~
 firstNameParser :: Parser String
-firstNameParser = error "todo"
+firstNameParser = bindParser upper (\c -> 
+                    bindParser (list lower) (\cs ->
+                        valueParser (c:cs)))
 
 -- Exercise 15
 -- Write a parser for Person.surname.
 -- * Surname: string that starts with a capital letter and is followed by 5 or more lower-case letters
 -- ~~~ Use bindParser, value, upper, thisMany, lower and list. ~~~
 surnameParser :: Parser String
-surnameParser = error "todo"
+surnameParser = bindParser upper (\c ->
+                    bindParser (thisMany 5 lower) (\cs ->
+                        bindParser (list lower) (\t ->
+                            valueParser (c:cs++t))))
 
 -- Exercise 16
 -- Write a parser for Person.gender.
 -- * Gender: character that must be 'm' or 'f'
   -- ~~~ Use is and (|||). ~~~
 genderParser :: Parser Char
-genderParser = error "todo"
+genderParser = is 'm' ||| is 'f'
 
 -- Exercise 17
 -- Write part of a parser for Person.phoneBody.
@@ -208,14 +216,17 @@ genderParser = error "todo"
 -- * Phone: string of digits, dots or hyphens ...
 -- ~~~ Use list, digit, (|||) and is. ~~~
 phoneBodyParser :: Parser String
-phoneBodyParser = error "todo"
+phoneBodyParser = list (digit ||| is '.' ||| is '-')
 
 -- Exercise 18
 -- Write a parser for Person.phone.
 -- * Phone: ... but must start with a digit and end with a hash (#)
 -- ~~~ Use bindParser, value, digit, phoneBodyParser and is. ~~~
 phoneParser :: Parser String
-phoneParser = error "todo"
+phoneParser = bindParser digit (\d ->
+                bindParser phoneBodyParser (\b ->
+                    bindParser (is '#') (\_ ->
+                        valueParser (d : b))))
 
 -- Exercise 19
 -- Write a parser for Person.
@@ -226,8 +237,17 @@ phoneParser = error "todo"
 --         genderParser,
 --         phoneParser ~~~
 personParser :: Parser Person
-personParser = error "todo"
-
+personParser = bindParser ageParser (\age ->
+               spaces1 >>>
+               bindParser firstNameParser (\firstName ->
+               spaces1 >>>
+               bindParser surnameParser (\surname ->
+               spaces1 >>>
+               bindParser genderParser (\gender ->
+               spaces1 >>>
+               bindParser phoneParser (\phone ->
+               valueParser (Person age firstName surname gender phone))))))
+--
 -- Exercise 20
 -- Make sure all the tests pass!
 
