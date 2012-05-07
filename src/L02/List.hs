@@ -11,6 +11,7 @@
 module L02.List where
 
 -- BEGIN Helper functions and data types
+import Control.Applicative
 
 -- The custom list type
 data List t = Nil | t :| List t deriving Eq
@@ -68,8 +69,7 @@ suum = foldLeft (+) 0
 -- Elegance: 0.5 marks
 -- Total: 4
 len :: List a -> Int
-len Nil = 0
-len (_:|xs) = 1+len xs
+len = foldLeft (const.succ) 0
 
 -- Exercise 4
 -- Relative Difficulty: 5
@@ -78,8 +78,7 @@ len (_:|xs) = 1+len xs
 -- Elegance: 1.5 marks
 -- Total: 7
 maap :: (a -> b) -> List a -> List b
-maap _ Nil = Nil
-maap f (x:|xs) = f x :| maap f xs
+maap f = foldRight ((:|) . f) Nil
 
 -- Exercise 5
 -- Relative Difficulty: 5
@@ -88,9 +87,7 @@ maap f (x:|xs) = f x :| maap f xs
 -- Elegance: 1 mark
 -- Total: 7
 fiilter :: (a -> Bool) -> List a -> List a
-fiilter _ Nil = Nil
-fiilter p (x:|xs) = if p x then x:|fiilterRest else fiilterRest
-    where fiilterRest = fiilter p xs
+fiilter p = foldRight (\x -> if p x then (x:|) else id) Nil
 
 -- Exercise 6
 -- Relative Difficulty: 5
@@ -99,9 +96,8 @@ fiilter p (x:|xs) = if p x then x:|fiilterRest else fiilterRest
 -- Elegance: 1 mark
 -- Total: 7
 append :: List a -> List a -> List a
-append Nil ys = ys
-append xs Nil = xs
-append (x:|xs) ys = x:|append xs ys
+--append = (flip . foldRight) (:|)
+append = flip (foldRight (:|))
 
 -- Exercise 7
 -- Relative Difficulty: 5
@@ -110,8 +106,7 @@ append (x:|xs) ys = x:|append xs ys
 -- Elegance: 1 mark
 -- Total: 7
 flatten :: List (List a) -> List a
-flatten Nil = Nil
-flatten (x:|xs) = x `append` flatten xs
+flatten = foldRight append Nil
 
 -- Exercise 8
 -- Relative Difficulty: 7
@@ -120,8 +115,7 @@ flatten (x:|xs) = x `append` flatten xs
 -- Elegance: 1.5 mark
 -- Total: 8
 flatMap :: (a -> List b) -> List a -> List b
-flatMap _ Nil = Nil
-flatMap f xs = flatten (maap f xs)
+flatMap f = flatten . (maap f)
 
 -- Exercise 9
 -- Relative Difficulty: 8
@@ -130,9 +124,8 @@ flatMap f xs = flatten (maap f xs)
 -- Elegance: 3.5 marks
 -- Total: 9
 seqf :: List (a -> b) -> a -> List b
-seqf Nil _ = Nil
---seqf (f:|fs) x = f x :| seqf fs x
-seqf fs x = maap (\f -> f x) fs
+seqf fs x = maap ($ x) fs
+-- Tony's: seqf = foldRight (liftA2 (:|)) (pure Nil)
 
 -- Exercise 10
 -- Relative Difficulty: 10
@@ -141,12 +134,7 @@ seqf fs x = maap (\f -> f x) fs
 -- Elegance: 2.5 marks
 -- Total: 10
 rev :: List a -> List a
---rev Nil = Nil
---rev (x:|xs) = rev xs `append` (x:|Nil)  <<<<< O(n^2)  ???
-rev xs = loop Nil xs
-    where loop a Nil = a
-          loop a (y:|ys) = loop (y:|a) ys   -- O(n)     ???
-
+rev = foldLeft (flip (:|)) Nil
 
 
 -- END Exercises
