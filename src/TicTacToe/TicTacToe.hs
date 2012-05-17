@@ -45,15 +45,22 @@ instance Show Player where
 move :: Either NewBoard InPlayBoard -> Position -> Either FinishedBoard InPlayBoard
 move (Left b) p = Right (InPlayBoard [(p, Naught)])
 move (Right b) p
-    | isFinished moves' = Left (FinishedBoard moves')
+    | isFull || isWon   = Left (FinishedBoard moves')
     | otherwise         = Right (InPlayBoard moves')
     where 
         currentMoves = moves b
         moves' = addMove currentMoves p
-        isFinished m = False
+        isFull = length moves' == 9
+        isWon = hasWinningMove (map fst moves')
 
-whoWon :: FinishedBoard -> Player
-whoWon = error "todo"
+whoWon :: FinishedBoard -> Maybe Player
+whoWon b
+    | hasWinningMove allNaughts = Just Naught
+    | hasWinningMove allCrosses = Just Cross
+    | otherwise                   = Nothing
+    where
+        allNaughts = positions Naught b
+        allCrosses = positions Cross b
 
 takeBack :: Either FinishedBoard InPlayBoard -> Either NewBoard InPlayBoard
 takeBack = error "todo"
@@ -75,10 +82,30 @@ play b = do
     nextTurn nextBoard
 
 nextTurn :: Either FinishedBoard InPlayBoard -> IO()
-nextTurn (Left x) = putStrLn "FINISHED"
 nextTurn (Right x) = play (Right x)
+nextTurn (Left x) = putStrLn $ "FINISHED: " ++ winner (whoWon x)
+    where winner Nothing = "Draw!"
+          winner (Just p) = show p ++ " won!"
 
 ---- HELPERS
+hasWinningMove :: [Position] -> Bool
+hasWinningMove pos = any (\ps -> all (\p -> p `elem` pos) ps) wins
+
+positions :: Board b => Player -> b -> [Position]
+positions p b = map fst . filter (\m -> p == snd m) $ allMoves
+    where allMoves = moves b
+
+
+wins :: [[Position]]
+wins = [ [TopLeft, TopMiddle, TopRight],
+    [MiddleLeft, Middle, MiddleRight],
+    [BottomLeft, BottomMiddle, BottomRight],
+    [TopLeft, MiddleLeft, BottomLeft],
+    [TopMiddle, Middle, BottomMiddle],
+    [TopRight, MiddleRight, BottomRight],
+    [TopLeft, Middle, BottomRight],
+    [TopRight, Middle, BottomLeft] ]
+
 whoseTurn :: Moves -> Player
 whoseTurn [] = Cross
 whoseTurn ((_,lastPlayer):_)
@@ -107,3 +134,9 @@ splitAtN :: Int -> [a] -> [[a]]
 splitAtN _ [] = []
 splitAtN n list = first : splitAtN n rest
     where (first,rest) = splitAt n list
+
+-- readMaybe defn from http://stackoverflow.com/a/8067014/906
+readMaybe :: Read a => String -> Maybe a
+readMaybe s = case reads s of
+              [(x, "")] -> Just x
+              _ -> Nothing
