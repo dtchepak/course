@@ -51,7 +51,7 @@ move (Right b) p
         currentMoves = moves b
         moves' = addMove currentMoves p
         isFull = length moves' == 9
-        isWon = hasWinningMove (map fst moves')
+        isWon = hasWinningMove (positions Naught b) || hasWinningMove (positions Cross b)
 
 whoWon :: FinishedBoard -> Maybe Player
 whoWon b
@@ -76,13 +76,19 @@ main = do
 
 play :: Either NewBoard InPlayBoard -> IO()
 play b = do
-    pos <- fmap read getLine
-    let nextBoard = move b pos
-    putStrLn $ showBoard nextBoard
-    nextTurn nextBoard
+    pos <- fmap readMaybe getLine
+    playAt pos
+    where 
+        playAt Nothing = play b
+        playAt (Just p) = do
+            let nextBoard = move b p
+            putStrLn $ showBoard nextBoard
+            nextTurn nextBoard
 
 nextTurn :: Either FinishedBoard InPlayBoard -> IO()
-nextTurn (Right x) = play (Right x)
+nextTurn (Right x) = do
+    putStrLn $ (show . whoseTurn . moves) x ++ "'s turn: "
+    play (Right x)
 nextTurn (Left x) = putStrLn $ "FINISHED: " ++ winner (whoWon x)
     where winner Nothing = "Draw!"
           winner (Just p) = show p ++ " won!"
