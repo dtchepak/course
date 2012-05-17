@@ -63,7 +63,9 @@ whoWon b
         allCrosses = positions Cross b
 
 takeBack :: Either FinishedBoard InPlayBoard -> Either NewBoard InPlayBoard
-takeBack = error "todo"
+takeBack (Left b) = Right (InPlayBoard (tail (moves b)))
+takeBack (Right b) = let prevMoves = tail (moves b)
+                     in if length prevMoves == 0 then Left NewBoard else Right (InPlayBoard prevMoves)
 
 playerAt :: Board b => b -> Position -> Maybe Player
 playerAt b = (flip lookup) (moves b)
