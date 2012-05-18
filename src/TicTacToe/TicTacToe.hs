@@ -14,6 +14,8 @@ You should write automated tests for your API. For example, the following univer
 `forall Board b. forall Position p. such that (not (positionIsOccupied
 p b)). takeBack(move(p, b)) == b`
  -}
+module TicTacToe (move, whoWon, takeBack, playerAt) where
+
 import Data.List
 
 data Player = Naught | Cross deriving (Eq)
@@ -51,7 +53,7 @@ move (Right b) p
         currentMoves = moves b
         moves' = addMove currentMoves p
         isFull = length moves' == 9
-        isWon = hasWinningMove (positions Naught b) || hasWinningMove (positions Cross b)
+        isWon = hasWinningMove (positions Naught moves') || hasWinningMove (positions Cross moves')
 
 whoWon :: FinishedBoard -> Maybe Player
 whoWon b
@@ -59,8 +61,9 @@ whoWon b
     | hasWinningMove allCrosses = Just Cross
     | otherwise                   = Nothing
     where
-        allNaughts = positions Naught b
-        allCrosses = positions Cross b
+        allMoves = moves b
+        allNaughts = positions Naught allMoves
+        allCrosses = positions Cross allMoves
 
 takeBack :: Either FinishedBoard InPlayBoard -> Either NewBoard InPlayBoard
 takeBack (Left b) = Right (InPlayBoard (tail (moves b)))
@@ -99,10 +102,8 @@ nextTurn (Left x) = putStrLn $ "FINISHED: " ++ winner (whoWon x)
 hasWinningMove :: [Position] -> Bool
 hasWinningMove pos = any (\ps -> all (\p -> p `elem` pos) ps) wins
 
-positions :: Board b => Player -> b -> [Position]
-positions p b = map fst . filter (\m -> p == snd m) $ allMoves
-    where allMoves = moves b
-
+positions :: Player -> Moves -> [Position]
+positions p moves = map fst . filter (\m -> p == snd m) $ moves
 
 wins :: [[Position]]
 wins = [ [TopLeft, TopMiddle, TopRight],
