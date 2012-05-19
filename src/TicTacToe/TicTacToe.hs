@@ -18,7 +18,7 @@ module TicTacToe (move, whoWon, takeBack, playerAt) where
 
 import Data.List
 
-data Player = Naught | Cross deriving (Eq)
+data Player = Naught | Cross | None deriving (Eq)
 data NewBoard = NewBoard
 data InPlayBoard = InPlayBoard Moves
 data FinishedBoard = FinishedBoard Moves
@@ -39,13 +39,17 @@ instance Show InPlayBoard where
     show (InPlayBoard b) = showMoves b
 instance Show FinishedBoard where
     show (FinishedBoard b) = showMoves b
+instance (Board a, Board b) => Board (Either a b) where
+    moves (Left a) = moves a
+    moves (Right b) = moves b
 
 instance Show Player where
     show Naught = "O"
     show Cross  = "X"
+    show None   = "-"
 
 move :: Either NewBoard InPlayBoard -> Position -> Either FinishedBoard InPlayBoard
-move (Left b) p = Right (InPlayBoard [(p, Naught)])
+move (Left b) p = Right (InPlayBoard [(p, whoseTurn [])])
 move (Right b) p
     | isFull || isWon   = Left (FinishedBoard moves')
     | otherwise         = Right (InPlayBoard moves')
@@ -55,11 +59,11 @@ move (Right b) p
         isFull = length moves' == 9
         isWon = hasWinningMove (positions Naught moves') || hasWinningMove (positions Cross moves')
 
-whoWon :: FinishedBoard -> Maybe Player
+whoWon :: FinishedBoard -> Player
 whoWon b
-    | hasWinningMove allNaughts = Just Naught
-    | hasWinningMove allCrosses = Just Cross
-    | otherwise                   = Nothing
+    | hasWinningMove allNaughts = Naught
+    | hasWinningMove allCrosses = Cross
+    | otherwise                 = None
     where
         allMoves = moves b
         allNaughts = positions Naught allMoves
@@ -70,8 +74,10 @@ takeBack (Left b) = Right (InPlayBoard (tail (moves b)))
 takeBack (Right b) = let prevMoves = tail (moves b)
                      in if length prevMoves == 0 then Left NewBoard else Right (InPlayBoard prevMoves)
 
-playerAt :: Board b => b -> Position -> Maybe Player
-playerAt b = (flip lookup) (moves b)
+playerAt :: Board b => b -> Position -> Player
+playerAt b pos = case (flip lookup) (moves b) pos of
+    Nothing -> None
+    (Just p) -> p
 
 --- GAME LOOP
 
@@ -81,22 +87,22 @@ main = do
 
 play :: Either NewBoard InPlayBoard -> IO()
 play b = do
+    putStrLn $ showBoard b
+    putStrLn $ prompt
     pos <- fmap readMaybe getLine
     playAt pos
     where 
+        prompt = (show . whoseTurn . moves) b ++ "'s turn: "
         playAt Nothing = play b
-        playAt (Just p) = do
-            let nextBoard = move b p
-            putStrLn $ showBoard nextBoard
-            nextTurn nextBoard
+        playAt (Just p) = nextTurn (move b p)
 
 nextTurn :: Either FinishedBoard InPlayBoard -> IO()
-nextTurn (Right x) = do
-    putStrLn $ (show . whoseTurn . moves) x ++ "'s turn: "
-    play (Right x)
-nextTurn (Left x) = putStrLn $ "FINISHED: " ++ winner (whoWon x)
-    where winner Nothing = "Draw!"
-          winner (Just p) = show p ++ " won!"
+nextTurn (Right x) = play (Right x)
+nextTurn b@(Left x) = do 
+    putStrLn $ showBoard b
+    putStrLn $ "FINISHED: " ++ winner (whoWon x)
+    where winner None = "Draw!"
+          winner p = show p ++ " won!"
 
 ---- HELPERS
 hasWinningMove :: [Position] -> Bool
@@ -137,7 +143,6 @@ showMoves m = (unlines . map show . splitAtN 3) positions
 showBoard :: (Board a, Board b, Show a, Show b) => Either a b -> String
 showBoard (Left x) = show x
 showBoard (Right x) = show x
-
 
 splitAtN :: Int -> [a] -> [[a]]
 splitAtN _ [] = []
