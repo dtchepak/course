@@ -34,7 +34,7 @@ instance Board InPlayBoard where
 instance Board FinishedBoard where
     moves (FinishedBoard b) = b
 instance Show NewBoard where
-    show b = showMoves []
+    show _ = showMoves []
 instance Show InPlayBoard where
     show (InPlayBoard b) = showMoves b
 instance Show FinishedBoard where
@@ -49,7 +49,7 @@ instance Show Player where
     show None   = "-"
 
 move :: Either NewBoard InPlayBoard -> Position -> Either FinishedBoard InPlayBoard
-move (Left b) p = Right (InPlayBoard [(p, whoseTurn [])])
+move (Left _) p = Right (InPlayBoard [(p, whoseTurn [])])
 move (Right b) p
     | isFull || isWon   = Left (FinishedBoard moves')
     | otherwise         = Right (InPlayBoard moves')
