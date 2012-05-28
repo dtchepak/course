@@ -13,55 +13,60 @@ class Misty m where
   -- Relative Difficulty: 3
   -- (use banana and unicorn)
   furry' :: (a -> b) -> m a -> m b
-  furry' = error "todo"
+  furry' f = banana (unicorn . f)
 
 -- Exercise 5
 -- Relative Difficulty: 2
 instance Misty List where
-  banana = error "todo"
-  unicorn = error "todo"
+  banana = flatMap
+  unicorn a = a:|Nil
 
 -- Exercise 6
 -- Relative Difficulty: 2
 instance Misty Optional where
-  banana = error "todo"
-  unicorn = error "todo"
+  banana _ Empty = Empty
+  banana f (Full a) = f a
+  unicorn a = Full a
 
 -- Exercise 7
 -- Relative Difficulty: 3
 instance Misty Parser where
-  banana = error "todo"
-  unicorn = error "todo"
+  banana f p = bindParser p f
+  unicorn = valueParser
 
 -- Exercise 8
 -- Relative Difficulty: 2
 jellybean :: Misty m => m (m a) -> m a
-jellybean = error "todo"
+jellybean = banana id
 
 -- Exercise 9
 -- Relative Difficulty: 3
 sausage :: Misty m => [m a] -> m [a]
-sausage = error "todo"
+sausage [] = unicorn []
+sausage (h:t) = banana (\a ->
+                   banana (\a' -> unicorn (a:a')) (sausage t)) h
+{- need to revist abouve. Use furry' and sausage -}
 
 -- Exercise 10
 -- Relative Difficulty: 3
 moppy :: Misty m => (a -> m b) -> [a] -> m [b]
-moppy = error "todo"
+moppy f = sausage . furry' f
 
 -- Exercise 11
 -- Relative Difficulty: 4
 rockstar :: Misty m => Int -> m a -> m [a]
-rockstar = error "todo"
+rockstar n = furry' (replicate n)
 
 -- Exercise 12
 -- Relative Difficulty: 9
 filtering  :: Misty m => (a -> m Bool) -> [a] -> m [a]
-filtering = error "todo"
+filtering _ [] = unicorn []
+filtering f (x:xs) = undefined
 
 -- Exercise 13
 -- Relative Difficulty: 10
 apple :: Misty m => m (a -> b) -> m a -> m b
-apple = error "todo"
+apple f x = banana (\f' -> furry' f' x) f
 
 -- Exercise 14
 -- Relative Difficulty: 6
