@@ -105,6 +105,18 @@ append = flip (foldRight (:|))
 flatten :: List (List a) -> List a
 flatten = foldRight append Nil
 
+-- Can write using flatMap
+flatten' :: List (List a) -> List a
+flatten' = flatMap id
+
+pointList :: a -> List a
+pointList a = a :| Nil
+
+map' :: (a -> b) -> List a -> List b
+--map' f = flatMap (pointList . f)
+map' = flatMap . (pointList .)
+
+
 -- Exercise 8
 -- Relative Difficulty: 7
 -- Correctness: 5.0 marks
