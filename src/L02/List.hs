@@ -116,7 +116,6 @@ map' :: (a -> b) -> List a -> List b
 map' f = flatMap (pointList . f)
 --map' = flatMap . (pointList .)
 
-
 -- Exercise 8
 -- Relative Difficulty: 7
 -- Correctness: 5.0 marks
