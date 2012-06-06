@@ -3,13 +3,35 @@ module L03.Parser where
 import Data.Char
 import L01.Validation
 import L03.Person
-
+import Control.Arrow (second)
 
 type Input = String
 
 data Parser a = P {
   parse :: Input -> Validation (Input, a)
 }
+
+data ParserT f x = Pt {
+  parseT :: Input -> f (Validation (Input, x))
+}
+ 
+instance Functor f => Functor (ParserT f) where
+  -- (a -> b) -> ParserT f a -> ParserT f b
+  --fmap f (Pt p) = Pt (\i -> fmap (mapValidation (\(i',v) -> (i', f v))) (p i))
+  --fmap f (Pt p) = Pt (\i -> fmap (mapValidation (second f)) (p i))
+  --fmap f (Pt p) = Pt $ ((fmap . mapValidation . second) f) . p
+  --fmap f (Pt p) = Pt $ ((fmap . mapValidation . second) f) `fmap` p
+  --fmap f (Pt p) = Pt $ fmap ((fmap . mapValidation . second) f) p
+  fmap f (Pt p) = Pt $ ((fmap . fmap . mapValidation . second) f) p
+  --If we had instances of fmaps everywhere:
+  --    fmap f (Pt p) = Pt $ ((fmap . fmap . fmap . fmap) f) p
+
+--let a  = parseT (Pt (\i -> [Value (i,1), Value (i,2)])) "abc"
+
+instance Monad f => Monad (ParserT f) where
+  (>>=) = undefined
+  return = undefined
+
 
 -- Exercise 1
 -- Return a parser that always succeeds
