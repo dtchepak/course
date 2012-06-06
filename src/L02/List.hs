@@ -113,8 +113,8 @@ pointList :: a -> List a
 pointList a = a :| Nil
 
 map' :: (a -> b) -> List a -> List b
---map' f = flatMap (pointList . f)
-map' = flatMap . (pointList .)
+map' f = flatMap (pointList . f)
+--map' = flatMap . (pointList .)
 
 
 -- Exercise 8
