@@ -15,20 +15,19 @@ data Parser a = P {
 -- Return a parser that always succeeds
 -- with the given value and consumes no input.
 valueParser :: a -> Parser a
-valueParser = \a -> P (\i -> Value (i, a))
+valueParser = error "todo"
 
 -- Exercise 2
 -- Return a parser that always fails
 -- with the given error.
 failed :: Err -> Parser a
-failed err = P (\_ -> Error err)
+failed = error "todo"
 
 -- Exercise 3
 -- Return a parser that succeeds with a character
 -- off the input or fails with an error if the input is empty.
 character :: Parser Char
-character = P (\i -> case i of (c:cs) -> Value (cs, c)
-                               []     -> Error "input is empty")
+character = error "todo"
 
 -- Exercise 4
 -- Return a parser that puts its input into the given parser and
@@ -36,156 +35,157 @@ character = P (\i -> case i of (c:cs) -> Value (cs, c)
 --     then put in the remaining input in the resulting parser.
 --   * if that parser fails with an error the returned parser fails with that error.
 bindParser :: Parser a -> (a -> Parser b) -> Parser b
-bindParser (P p) f = P (\i -> case p i of (Value (i', a)) -> parse (f a) i'
-                                          (Error err)       -> Error err)
+bindParser = error "todo"
 
 -- Exercise 5
 -- Return a parser that puts its input into the given parser and
 --   * if that parser succeeds with a value (a), ignore that value
 --     but put the remaining input into the second given parser.
 --   * if that parser fails with an error the returned parser fails with that error.
+-- ~~~ This function should call bindParser. ~~~
 (>>>) :: Parser a -> Parser b -> Parser b
-p >>> q = p `bindParser` (\_ -> q)
+(>>>) = error "todo"
 
 -- Exercise 6
 -- Return a parser that tries the first parser for a successful value.
 --   * If the first parser succeeds then use this parser.
 --   * If the first parser fails, try the second parser.
 (|||) :: Parser a -> Parser a -> Parser a
-(P p) ||| (P q) = P (\i -> case p i of v@(Value _) -> v
-                                       (Error _)   -> q i)
+(|||) = error "todo"
 
 infixl 3 |||
 
 -- Exercise 7
 -- Return a parser that continues producing a list of values from the given parser.
+-- ~~~ Use many1, valueParser and (|||). ~~~
 list :: Parser a -> Parser [a]
-list p = many1 p ||| valueParser []
+list = error "todo"
 
 -- Exercise 8
 -- Return a parser that produces at least one value from the given parser then
 -- continues producing a list of values from the given parser (to ultimately produce a non-empty list).
 -- The returned parser fails if
 --   * The input is empty
+-- ~~~ Use bindParser, list and value. ~~~
 many1 :: Parser a -> Parser [a]
-many1 p = p `bindParser` (\k ->
-          list p `bindParser` (\k' ->
-          valueParser (k:k') ))
+many1 = error "todo"
 
 -- Exercise 9
 -- Return a parser that produces a character but fails if
 --   * The input is empty.
 --   * The character does not satisfy the given predicate.
+-- ~~~ The bindParser and character functions will be helpful here. ~~~
 satisfy :: (Char -> Bool) -> Parser Char
-satisfy p = character `bindParser` (\c -> 
-                if p c then valueParser c
-                else failed $ "unexpected character " ++ [c])
+satisfy = error "todo"
 
 -- Exercise 10.1
 -- Return a parser that produces the given character but fails if
 --   * The input is empty.
 --   * The produced character is not equal to the given character.
+-- ~~~ Use the satisfy function. ~~~
 is :: Char -> Parser Char
-is = satisfy . (==)
+is = error "todo"
 
 -- Exercise 10.2
 -- Return a parser that produces a character between '0' and '9' but fails if
 --   * The input is empty.
 --   * The produced character is not a digit.
+-- ~~~ Use the satisfy and Data.Char.isDigit functions. ~~~
 digit :: Parser Char
-digit = satisfy isDigit
+digit = error "todo"
 
 -- Exercise 10.3
 -- Return a parser that produces zero or a positive integer but fails if
 --   * The input is empty.
 --   * The input does not produce a value series of digits
+-- ~~~ Use the bindParser, valueParser, list and digit functions. ~~~
 natural :: Parser Int
-natural = many1 digit `bindParser` (\ds -> valueParser (read ds))
-
-natural' :: Parser Int
-natural' = bindParser (list digit) (\k -> case reads k of []    -> failed "Failed to parse natural"
-                                                          ((h,_):_) -> valueParser h)
+natural = error "todo"
 
 -- Exercise 10.4
 -- Return a parser that produces a space character but fails if
 --   * The input is empty.
 --   * The produced character is not a space.
+-- ~~~ Use the satisfy and Data.Char.isSpace functions. ~~~
 space :: Parser Char
-space = is ' '
+space = error "todo"
 
 -- Exercise 10.5
 -- Return a parser that produces one or more space characters
 -- (consuming until the first non-space) but fails if
 --   * The input is empty.
 --   * The first produced character is not a space.
+-- ~~~ Use the many1 and space functions. ~~~
 spaces1 :: Parser String
-spaces1 = many1 space
+spaces1 = error "todo"
 
 -- Exercise 10.6
 -- Return a parser that produces a lower-case character but fails if
 --   * The input is empty.
 --   * The produced character is not lower-case.
+-- ~~~ Use the satisfy and Data.Char.isLower functions. ~~~
 lower :: Parser Char
-lower = satisfy isLower
+lower = error "todo"
 
 -- Exercise 10.7
 -- Return a parser that produces an upper-case character but fails if
 --   * The input is empty.
 --   * The produced character is not upper-case.
+-- ~~~ Use the satisfy and Data.Char.isUpper functions. ~~~
 upper :: Parser Char
-upper = satisfy isUpper
+upper = error "todo"
 
 -- Exercise 10.8
 -- Return a parser that produces an alpha character but fails if
 --   * The input is empty.
 --   * The produced character is not alpha.
+-- ~~~ Use the satisfy and Data.Char.isAlpha functions. ~~~
 alpha :: Parser Char
-alpha = satisfy isAlpha
+alpha = error "todo"
 
 -- Exercise 11
 -- Return a parser that sequences the given list of parsers by producing all their results
 -- but fails on the first failing parser of the list.
+-- ~~~ Use bindParser and value. ~~~
+-- ~~~ Optionally use Prelude.foldr. If not, an explicit recursive call. ~~~
 sequenceParser :: [Parser a] -> Parser [a]
-sequenceParser [] = valueParser []
-sequenceParser (p:ps) = p `bindParser` (\k ->
-                            sequenceParser ps `bindParser` (\k' ->
-                            valueParser (k:k') ))
+sequenceParser = error "todo"
 
 -- Exercise 12
 -- Return a parser that produces the given number of values off the given parser.
 -- This parser fails if
 --   * The given parser fails in the attempt to produce the given number of values.
+-- ~~~ Use sequenceParser and Prelude.replicate. ~~~
 thisMany :: Int -> Parser a -> Parser [a]
-thisMany n = sequenceParser . (replicate n)
+thisMany = error "todo"
 
 -- Exercise 13
 -- Write a parser for Person.age.
 -- * Age: positive integer
+-- ~~~ Equivalent to natural. ~~~
 ageParser :: Parser Int
-ageParser = natural
+ageParser = error "todo"
 
 -- Exercise 14
 -- Write a parser for Person.firstName.
 -- * First Name: non-empty string that starts with a capital letter
+-- ~~~ Use bindParser, value, upper, list and lower. ~~~
 firstNameParser :: Parser String
-firstNameParser = upper `bindParser` (\k ->
-                  list lower `bindParser` (\k' ->
-                  valueParser (k:k') ))
+firstNameParser = error "todo"
 
 -- Exercise 15
 -- Write a parser for Person.surname.
 -- * Surname: string that starts with a capital letter and is followed by 5 or more lower-case letters
+-- ~~~ Use bindParser, value, upper, thisMany, lower and list. ~~~
 surnameParser :: Parser String
-surnameParser = upper `bindParser` (\k ->
-                  thisMany 5 lower `bindParser` (\k' ->
-                  list lower `bindParser` (\k'' ->
-                  valueParser (k:(k' ++ k'')) )))
+surnameParser = error "todo"
 
 -- Exercise 16
 -- Write a parser for Person.gender.
 -- * Gender: character that must be 'm' or 'f'
+  -- ~~~ Use is and (|||). ~~~
 genderParser :: Parser Char
-genderParser = is 'm' ||| is 'f'
+genderParser = error "todo"
 
 -- Exercise 17
 -- Write part of a parser for Person.phoneBody.
@@ -193,30 +193,27 @@ genderParser = is 'm' ||| is 'f'
 -- It will ignore the overall requirement of a phone number to
 -- start with a digit and end with a hash (#).
 -- * Phone: string of digits, dots or hyphens ...
+-- ~~~ Use list, digit, (|||) and is. ~~~
 phoneBodyParser :: Parser String
-phoneBodyParser = list (digit ||| is '.' ||| is '-')
+phoneBodyParser = error "todo"
 
 -- Exercise 18
 -- Write a parser for Person.phone.
 -- * Phone: ... but must start with a digit and end with a hash (#)
+-- ~~~ Use bindParser, value, digit, phoneBodyParser and is. ~~~
 phoneParser :: Parser String
-phoneParser = digit `bindParser` (\d ->
-                phoneBodyParser `bindParser` (\d' ->
-                is '#' >>> valueParser (d:d') ))
+phoneParser = error "todo"
 
 -- Exercise 19
 -- Write a parser for Person.
+-- ~~~ Use bindParser, value, (>>>)
+--         ageParser,
+--         firstNameParser,
+--         surnameParser,
+--         genderParser,
+--         phoneParser ~~~
 personParser :: Parser Person
-personParser = ageParser `bindParser` (\age ->
-               space >>>
-               firstNameParser `bindParser` (\fn ->
-               space >>>
-               surnameParser `bindParser` (\sn ->
-               space >>>
-               genderParser `bindParser` (\gender ->
-               space >>>
-               phoneParser `bindParser` (\ph ->
-               valueParser (Person age fn sn gender ph) )))))
+personParser = error "todo"
 
 -- Exercise 20
 -- Make sure all the tests pass!
