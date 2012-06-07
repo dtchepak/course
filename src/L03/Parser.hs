@@ -4,14 +4,16 @@ import Data.Char
 import L01.Validation
 import L03.Person
 import Control.Arrow (second)
+import Control.Applicative
+import Data.Monoid
 
 type Input = String
 
 data Parser a = P {
   parse :: Input -> Validation (Input, a)
 }
-
-data ParserT f x = Pt {
+--           (* -> *) -> * -> *
+data ParserT f       x = Pt {
   parseT :: Input -> f (Validation (Input, x))
 }
  
@@ -27,11 +29,33 @@ instance Functor f => Functor (ParserT f) where
   --    fmap f (Pt p) = Pt $ ((fmap . fmap . fmap . fmap) f) p
 
 --let a  = parseT (Pt (\i -> [Value (i,1), Value (i,2)])) "abc"
+instance Functor Parser where
+    fmap f (P p) = P (\i -> case p i of Error e -> Error e
+                                        Value (i',v) -> Value (i', f v))
+instance Applicative Parser where
+    pure = valueParser
+    -- Parser (a->b) -> Parser a -> Parser b
+    --(P f) <*> (P a) = P (\i -> case f i of Error e -> Error e
+    --                                       Value (i',f') -> case a i' of Error e -> Error e
+    --                                                                     Value (i'',a') -> Value (i'', f' a'))
+    (P f) <*> p = P (\i -> case f i of Error e -> Error e 
+                                       Value (i', f') -> parse (fmap f' p) i')
 
 instance Monad f => Monad (ParserT f) where
-  (>>=) = undefined
-  return = undefined
+  -- (>>=) :: ParserT f a -> (a -> ParserT f b) -> ParserT f b
+  (Pt p) >>= f = Pt (\i -> (p i) >>= (\v -> case v of Error e -> return $ Error e
+                                                      Value (i',x) -> parseT (f x) i'))
+  --return a = Pt (\i -> return (Value (i, a)))
+  return a = Pt (\i -> (return . Value . (,) i) a)
 
+data Writer w a = Writer w a deriving (Eq, Show)
+instance Functor (Writer w) where
+    fmap f (Writer w a) = Writer w (f a)
+instance Monoid w => Monad (Writer w) where
+    return a = Writer mempty a
+    --(>>=) :: Writer w a -> (a -> Writer w b) -> Writer w b
+    (Writer w a) >>= f = let Writer w' b = f a
+                         in Writer (w `mappend` w') b
 
 -- Exercise 1
 -- Return a parser that always succeeds
