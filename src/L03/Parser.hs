@@ -312,6 +312,7 @@ readWritePerson src dst = do
 --    let p = parse personParser contents
 --    writeFile dst ((showPerson . (mapValidation . second) incAge) p)
 
+-- try rewriting using mapValidation?
 showPerson :: Validation (Input, Person) -> String
 showPerson (Error err) = err
 showPerson (Value (_, p)) = show p
