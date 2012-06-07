@@ -41,6 +41,10 @@ instance Applicative Parser where
     (P f) <*> p = P (\i -> case f i of Error e -> Error e 
                                        Value (i', f') -> parse (fmap f' p) i')
 
+instance Monad Parser where
+    return = valueParser
+    (>>=)  = bindParser
+
 instance Monad f => Monad (ParserT f) where
   -- (>>=) :: ParserT f a -> (a -> ParserT f b) -> ParserT f b
   (Pt p) >>= f = Pt (\i -> (p i) >>= (\v -> case v of Error e -> return $ Error e
@@ -294,4 +298,42 @@ personParser =
 
 -- Exercise 20
 -- Make sure all the tests pass!
+
+
+readWritePerson :: FilePath -> FilePath -> IO ()
+readWritePerson src dst = do
+    p <- mapValidation (second incAge) . parse personParser <$> readFile src
+    writeFile dst (showPerson p)
+
+--    p <- parse personParser <$> readFile src
+--    writeFile dst ((showPerson . mapValidation (second incAge)) p)
+
+--    contents <- readFile src
+--    let p = parse personParser contents
+--    writeFile dst ((showPerson . (mapValidation . second) incAge) p)
+
+showPerson :: Validation (Input, Person) -> String
+showPerson (Error err) = err
+showPerson (Value (_, p)) = show p
+
+showPeople :: Validation (Input, [Person]) -> String
+showPeople (Error err) = err
+showPeople (Value (_, ps)) = unlines . fmap show $ ps
+
+incAge :: Person -> Person
+incAge p = p {
+    age = succ . age $ p
+}
+
+peopleParser :: Parser [Person]
+peopleParser = many1 (list space >>> personParser)
+
+readWritePeople :: FilePath -> FilePath -> IO ()
+readWritePeople src dst = do
+    p <- (mapValidation . second . fmap) incAge . parse peopleParser <$> readFile src
+    writeFile dst (showPeople p)
+
+    --p <- mapValidation (second (fmap incAge)) . parse peopleParser <$> readFile src
+    --writeFile dst (showPeople p)
+
 
