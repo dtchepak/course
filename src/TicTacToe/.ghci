@@ -1,0 +1,4 @@
+:set -isrc -itest
+:l TicTacToe.Game TicTacToe.Game.Test
+:m + TicTacToe.Game TicTacToe.Game.Test
+:set prompt "ttt> "
