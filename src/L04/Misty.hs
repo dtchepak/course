@@ -25,9 +25,7 @@ instance Misty List where
 -- Relative Difficulty: 2
 instance Misty Optional where
   banana _ Empty = Empty
-  banana f (Full a) = case f a of
-                        Empty -> Empty
-                        Full b -> Full b
+  banana f (Full a) = f a
   unicorn = Full
 
 -- Exercise 7
