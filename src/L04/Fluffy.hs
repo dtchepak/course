@@ -11,27 +11,21 @@ class Fluffy f where
 -- Exercise 1
 -- Relative Difficulty: 1
 instance Fluffy List where
-  furry = maap
-
-instance Fluffy ((->) t) where
-  -- (a -> b) -> (t -> a) -> (t -> b)
-  furry = (.)
+  furry =
+    error "todo"
 
 -- Exercise 2
 -- Relative Difficulty: 1
 instance Fluffy Optional where
-  furry _ Empty = Empty
-  furry f (Full x) = Full (f x)
+  furry =
+    error "todo"
 
-
-foldOpt :: (a -> x) -> x -> Optional a -> x
-foldOpt _ z Empty = z
-foldOpt f _ (Full x) = f x
 
 -- Exercise 3
 -- Relative Difficulty: 2
 instance Fluffy Parser where
-  furry f p = p `bindParser` (valueParser . f)
+  furry =
+    error "todo"
 
 -----------------------
 -- SUPPORT LIBRARIES --
