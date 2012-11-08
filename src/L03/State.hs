@@ -84,20 +84,24 @@ findM ::
   -> List a
   -> f (Optional a)
 findM _ Nil = unicorn Empty
-findM _ (x:|xs) = error "todo"
-
+findM p (x:|xs) = banana (\match -> 
+                    if match then unicorn (Full x)
+                    else findM p xs) (p x)
 
 -- Exercise 8
 -- Relative Difficulty: 4
 -- Find the first element in a `List` that repeats.
 -- It is possible that no element repeats, hence an `Optional` result.
--- ~~~ Use findM and State with a Data.Set#Set. ~~~
 firstRepeat ::
   Ord a =>
   List a
   -> Optional a
-firstRepeat =
-  error "todo"
+firstRepeat l =
+    let isRepeat x = (\s -> if S.member x s then unicorn True 
+                            else put (S.insert x s) `skittle` unicorn False)
+                        `banana` get
+    in eval (findM isRepeat l) S.empty
+
 
 -- Exercise 9
 -- Relative Difficulty: 5
@@ -113,12 +117,13 @@ filterM ::
   (a -> f Bool)
   -> List a
   -> f (List a)
-filterM =
-  error "todo"
+filterM _ Nil = unicorn Nil
+filterM p (h:|t) = (\pick -> if pick then furry' (h:|) (filterM p t)
+                             else filterM p t) `banana` (p h)
 
 -- Exercise 10
 -- Relative Difficulty: 4
--- Remove all duplicate elements in a `List`.
+-- This function removes all duplicate elements in a `List`.
 -- ~~~ Use filterM and State with a Data.Set#Set. ~~~
 distinct ::
   Ord a =>
@@ -143,9 +148,6 @@ produce =
 -- A happy number is a positive integer, where the sum of the square of its digits eventually reaches 1 after repetition.
 -- In contrast, a sad number (not a happy number) is where the sum of the square of its digits never reaches 1
 -- because it results in a recurring sequence.
--- ~~~ Use findM with State and produce
--- ~~~ Use jellybean to write a square function
--- ~~~ Use library functions: Data.Foldable#elem, Data.Char#digitToInt
 isHappy ::
   Integer
   -> Bool

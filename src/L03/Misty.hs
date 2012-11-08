@@ -13,6 +13,9 @@ class Misty m where
   -- (use banana and unicorn)
   furry' :: (a -> b) -> m a -> m b
   furry' f = banana (unicorn . f)
+  skittle :: m a -> m b -> m b
+  skittle ma mb = (const mb) `banana` ma
+
 
 -- Exercise 5
 -- Relative Difficulty: 1
