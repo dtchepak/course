@@ -96,14 +96,8 @@ firstRepeat ::
   Ord a =>
   List a
   -> Optional a
-firstRepeat l = eval (findM isRepeat l) S.empty
-
-
-isRepeat :: Ord a => a -> State (S.Set a) Bool
-isRepeat x = (\s -> if S.member x s then unicorn True 
-                    else put (S.insert x s) `skittle` unicorn False)
-                        `banana` get
-
+firstRepeat l = 
+    eval (findM (\a -> State (\s -> (a `S.member` s, a `S.insert` s))) l) S.empty
 
 -- Exercise 9
 -- Relative Difficulty: 5
@@ -131,7 +125,8 @@ distinct ::
   Ord a =>
   List a
   -> List a
-distinct l = eval (filterM ((not `furry'`) . isRepeat) l) S.empty
+distinct l = 
+  eval (filterM (\a -> State (\s -> (a `S.notMember` s, a `S.insert` s))) l) S.empty
 
 -- Exercise 11
 -- Relative Difficulty: 3
