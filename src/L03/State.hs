@@ -96,11 +96,13 @@ firstRepeat ::
   Ord a =>
   List a
   -> Optional a
-firstRepeat l =
-    let isRepeat x = (\s -> if S.member x s then unicorn True 
-                            else put (S.insert x s) `skittle` unicorn False)
+firstRepeat l = eval (findM isRepeat l) S.empty
+
+
+isRepeat :: Ord a => a -> State (S.Set a) Bool
+isRepeat x = (\s -> if S.member x s then unicorn True 
+                    else put (S.insert x s) `skittle` unicorn False)
                         `banana` get
-    in eval (findM isRepeat l) S.empty
 
 
 -- Exercise 9
@@ -128,8 +130,7 @@ distinct ::
   Ord a =>
   List a
   -> List a
-distinct =
-  error "todo"
+distinct l = eval (filterM ((not `furry'`) . isRepeat) l) S.empty
 
 -- Exercise 11
 -- Relative Difficulty: 3
