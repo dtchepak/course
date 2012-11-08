@@ -3,6 +3,7 @@
 module L04.ListZipper where
 
 import Data.List
+import Data.Maybe (maybe)
 import L03.Fluffy
 
 -- A `ListZipper` is a focussed position, with a list of values to the left and to the right.
@@ -81,6 +82,9 @@ instance ListZipper' MaybeListZipper where
   fromListZipper =
     IsZ
 
+maybeZip :: ListZipper' f => f a -> Maybe (ListZipper a)
+maybeZip = toMaybe . toMaybeListZipper
+
 -- Exercise 4
 -- Relative Difficulty: 2
 -- Convert the given zipper back to a list.
@@ -88,9 +92,7 @@ toList ::
   ListZipper' f =>
   f a
   -> [a]
-toList z = case toMaybe (toMaybeListZipper z) of
-    Nothing -> []
-    Just (ListZipper l c r) -> reverse l ++ (c:r)
+toList = maybe [] (\(ListZipper l c r) -> reverse l ++ c:r) . maybeZip
 
 -- Exercise 5
 -- Relative Difficulty: 3
@@ -100,9 +102,8 @@ withFocus ::
   (a -> a)
   -> f a
   -> f a
-withFocus f z = case toMaybe (toMaybeListZipper z) of
-    Nothing -> z
-    Just (ListZipper l c r) -> fromListZipper $ ListZipper l (f c) r
+withFocus f z = 
+    maybe z (\(ListZipper l c r) -> fromListZipper $ ListZipper l (f c) r) (maybeZip z)
 
 -- Exercise 6
 -- Relative Difficulty: 2
@@ -113,8 +114,7 @@ setFocus ::
   a
   -> f a
   -> f a
-setFocus =
-  error "todo"
+setFocus = withFocus . const
 
 -- A flipped infix alias for `setFocus`. This allows:
 --
@@ -135,7 +135,7 @@ hasLeft ::
   f a
   -> Bool
 hasLeft =
-  error "todo"
+  maybe False (\(ListZipper l _ _) -> not $ null l) . maybeZip 
 
 -- Exercise 8
 -- Relative Difficulty: 2
@@ -145,7 +145,11 @@ hasRight ::
   f a
   -> Bool
 hasRight =
-  error "todo"
+  maybe False (\(ListZipper _ _ r) -> not $ null r) . maybeZip
+
+
+getFocus :: ListZipper a -> a
+getFocus (ListZipper _ c _) = c
 
 -- Exercise 9
 -- Relative Difficulty: 3
@@ -156,8 +160,9 @@ findLeft ::
   (a -> Bool)
   -> f a
   -> MaybeListZipper a
-findLeft =
-  error "todo"
+findLeft p =
+  maybe IsNotZ (\lz -> if p (getFocus lz) then toMaybeListZipper lz 
+                       else findLeft p (moveLeft lz)) . maybeZip
 
 -- Exercise 10
 -- Relative Difficulty: 3
@@ -168,8 +173,9 @@ findRight ::
   (a -> Bool)
   -> f a
   -> MaybeListZipper a
-findRight =
-  error "todo"
+findRight p =
+  maybe IsNotZ (\lz -> if p (getFocus lz) then toMaybeListZipper lz 
+                       else findRight p (moveRight lz)) . maybeZip
 
 -- Exercise 11
 -- Relative Difficulty: 4
@@ -179,8 +185,7 @@ moveLeftLoop ::
   ListZipper' f =>
   f a
   -> f a
-moveLeftLoop =
-  error "todo"
+moveLeftLoop z = undefined --if hasLeft z then toMaybeListZipper $ moveLeft z else end z
 
 -- Exercise 12
 -- Relative Difficulty: 4
