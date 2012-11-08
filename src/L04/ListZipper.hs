@@ -33,15 +33,14 @@ data MaybeListZipper a =
 -- Relative Difficulty: 2
 -- Implement the `Fluffy` instance for `ListZipper`.
 instance Fluffy ListZipper where
-  furry =
-    error "todo"
+  furry f (ListZipper l x r) = ListZipper (furry f l) (f x) (furry f r)
 
 -- Exercise 2
 -- Relative Difficulty: 2
 -- Implement the `Fluffy` instance for `MaybeListZipper`.
 instance Fluffy MaybeListZipper where
-  furry =
-    error "todo"
+  furry f (IsZ z) = IsZ (furry f z)
+  furry _ IsNotZ = IsNotZ
 
 -- Exercise 3
 -- Relative Difficulty: 2
@@ -49,8 +48,8 @@ instance Fluffy MaybeListZipper where
 fromList ::
   [a]
   -> MaybeListZipper a
-fromList =
-  error "todo"
+fromList [] = IsNotZ
+fromList (h:t) = IsZ (ListZipper [] h t)
 
 -- Exercise 3
 -- Relative Difficulty: 2
@@ -58,8 +57,8 @@ fromList =
 toMaybe ::
   MaybeListZipper a
   -> Maybe (ListZipper a)
-toMaybe =
-  error "todo"
+toMaybe (IsZ z) = Just z
+toMaybe IsNotZ = Nothing
 
 -- The `ListZipper'` type-class that will permit overloading operations.
 class Fluffy f => ListZipper' f where
@@ -89,8 +88,9 @@ toList ::
   ListZipper' f =>
   f a
   -> [a]
-toList =
-  error "todo"
+toList z = case toMaybe (toMaybeListZipper z) of
+    Nothing -> []
+    Just (ListZipper l c r) -> reverse l ++ (c:r)
 
 -- Exercise 5
 -- Relative Difficulty: 3
@@ -100,8 +100,9 @@ withFocus ::
   (a -> a)
   -> f a
   -> f a
-withFocus =
-  error "todo"
+withFocus f z = case toMaybe (toMaybeListZipper z) of
+    Nothing -> z
+    Just (ListZipper l c r) -> fromListZipper $ ListZipper l (f c) r
 
 -- Exercise 6
 -- Relative Difficulty: 2
