@@ -83,8 +83,9 @@ findM ::
   (a -> f Bool)
   -> List a
   -> f (Optional a)
-findM =
-  error "todo"
+findM _ Nil = unicorn Empty
+findM _ (x:|xs) = error "todo"
+
 
 -- Exercise 8
 -- Relative Difficulty: 4
