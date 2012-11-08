@@ -17,8 +17,13 @@ instance Fluffy Id where
 -- Exercise 2
 -- Relative Difficulty: 2
 instance Fluffy List where
-  furry =
-    error "todo"
+  furry = maap
+
+-- Exercise 2
+-- Relative Difficulty: 1
+instance Fluffy Optional where
+  furry _ Empty = Empty
+  furry f (Full a) = Full (f a)
 
 -- Exercise 3
 -- Relative Difficulty: 2
@@ -29,8 +34,7 @@ instance Fluffy Optional where
 -- Exercise 4
 -- Relative Difficulty: 3
 instance Fluffy ((->) t) where
-  furry =
-    error "todo"
+  furry f g = f . g
 
 -----------------------
 -- SUPPORT LIBRARIES --

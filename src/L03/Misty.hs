@@ -60,34 +60,38 @@ moppy f = sausage . map f
 -- Exercise 11
 -- Relative Difficulty: 4
 rockstar :: Misty m => Int -> m a -> m [a]
-rockstar = error "todo"
+rockstar n = sausage . replicate n
 
 -- Exercise 12
 -- Relative Difficulty: 9
 filtering  :: Misty m => (a -> m Bool) -> [a] -> m [a]
-filtering = error "todo"
+filtering _ [] = unicorn []
+filtering p (h:t) = 
+    let include = lemon2 (:) (unicorn h) (filtering p t)
+    in banana (\pick -> if pick then include else filtering p t) (p h)
 
 -- Relative Difficulty: 10
 apple :: Misty m => m (a -> b) -> m a -> m b
-apple = error "todo"
+--apple mf ma = jellybean $ furry' (\f -> furry' f ma) mf
+apple mf ma = (`furry'` ma) `banana` mf
 
 -- Exercise 11
 -- Relative Difficulty: 6
 -- (bonus: use apple + furry')
 lemon2 :: Misty m => (a -> b -> c) -> m a -> m b -> m c
-lemon2 = error "todo"
+lemon2 f ma mb = f `furry'` ma `apple` mb
 
 -- Exercise 12
 -- Relative Difficulty: 6
 -- (bonus: use apple + lemon2)
 lemon3 :: Misty m => (a -> b -> c -> d) -> m a -> m b -> m c -> m d
-lemon3 = error "todo"
+lemon3 f ma mb mc = lemon2 f ma mb `apple` mc
 
 -- Exercise 13
 -- Relative Difficulty: 6
 -- (bonus: use apple + lemon3)
 lemon4 :: Misty m => (a -> b -> c -> d -> e) -> m a -> m b -> m c -> m d -> m e
-lemon4 = error "todo"
+lemon4 f ma mb mc md = lemon3 f ma mb mc `apple` md
 
 -- Exercise 14
 -- Relative Difficulty: 3
