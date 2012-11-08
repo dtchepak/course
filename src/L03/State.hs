@@ -141,8 +141,7 @@ produce ::
   (a -> a)
   -> a
   -> List a
-produce =
-  error "todo"
+produce f a = a :| produce f (f a)
 
 -- Exercise 12
 -- Relative Difficulty: 10
