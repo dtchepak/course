@@ -1,3 +1,4 @@
+{-# LANGUAGE TupleSections #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module L03.State where
@@ -22,18 +23,17 @@ newtype State s a =
 -- Relative Difficulty: 2
 -- Implement the `Fluffy` instance for `State s`.
 instance Fluffy (State s) where
-  furry =
-    error "todo"
+  furry f st = State $ \s -> let (a,s') = runState st s in (f a,s')
 
 -- Exercise 2
 -- Relative Difficulty: 3
 -- Implement the `Misty` instance for `State s`.
 -- Make sure the state value is passed through in `banana`.
 instance Misty (State s) where
-  banana =
-    error "todo"
-  unicorn =
-    error "todo"
+  banana f st = State $ \s ->
+                    let (a, s') = runState st s
+                    in runState (f a) s'
+  unicorn a = State (a,)
 
 -- Exercise 3
 -- Relative Difficulty: 1
@@ -42,8 +42,7 @@ exec ::
   State s a
   -> s
   -> s
-exec =
-  error "todo"
+exec = (snd .) . runState
 
 -- Exercise 4
 -- Relative Difficulty: 1
@@ -52,16 +51,14 @@ eval ::
   State s a
   -> s
   -> a
-eval =
-  error "todo"
+eval = (fst .) . runState
 
 -- Exercise 5
 -- Relative Difficulty: 2
 -- A `State` where the state also distributes into the produced value.
 get ::
   State s s
-get =
-  error "todo"
+get = State $ \s -> (s,s)
 
 -- Exercise 6
 -- Relative Difficulty: 2
@@ -69,8 +66,7 @@ get =
 put ::
   s
   -> State s ()
-put =
-  error "todo"
+put s = State $ const ((),s)
 
 -- Exercise 7
 -- Relative Difficulty: 5
