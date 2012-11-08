@@ -51,7 +51,7 @@ reduceLeft f (h :| t) = foldLeft f h t
 -- Elegance: 0.5 marks
 -- Total: 3
 headOr :: List a -> a -> a
-headOr = error "todo"
+headOr = flip (foldRight const)
 
 -- Exercise 2
 -- Relative Difficulty: 2
@@ -60,7 +60,7 @@ headOr = error "todo"
 -- Elegance: 0.5 marks
 -- Total: 4
 suum :: List Int -> Int
-suum = error "todo"
+suum = foldLeft (+) 0
 
 -- Exercise 3
 -- Relative Difficulty: 2
@@ -69,7 +69,7 @@ suum = error "todo"
 -- Elegance: 0.5 marks
 -- Total: 4
 len :: List a -> Int
-len = error "todo"
+len = foldLeft (const . succ) 0
 
 -- Exercise 4
 -- Relative Difficulty: 5
@@ -78,7 +78,7 @@ len = error "todo"
 -- Elegance: 1.5 marks
 -- Total: 7
 maap :: (a -> b) -> List a -> List b
-maap = error "todo"
+maap f = foldRight ((:|) . f) Nil
 
 -- Exercise 5
 -- Relative Difficulty: 5
@@ -87,7 +87,7 @@ maap = error "todo"
 -- Elegance: 1 mark
 -- Total: 7
 fiilter :: (a -> Bool) -> List a -> List a
-fiilter = error "todo"
+fiilter p = foldRight (\x -> if p x then (:|) x else id) Nil
 
 -- Exercise 6
 -- Relative Difficulty: 5
@@ -96,7 +96,7 @@ fiilter = error "todo"
 -- Elegance: 1 mark
 -- Total: 7
 append :: List a -> List a -> List a
-append = error "todo"
+append = flip (foldRight (:|))
 
 -- Exercise 7
 -- Relative Difficulty: 5
@@ -105,7 +105,7 @@ append = error "todo"
 -- Elegance: 1 mark
 -- Total: 7
 flatten :: List (List a) -> List a
-flatten = error "todo"
+flatten = foldRight append Nil
 
 -- Exercise 8
 -- Relative Difficulty: 7
@@ -114,7 +114,7 @@ flatten = error "todo"
 -- Elegance: 1.5 mark
 -- Total: 8
 flatMap :: (a -> List b) -> List a -> List b
-flatMap = error "todo"
+flatMap f = flatten . maap f
 
 -- Exercise 9
 -- Relative Difficulty: 8
@@ -123,7 +123,7 @@ flatMap = error "todo"
 -- Elegance: 3.5 marks
 -- Total: 9
 seqf :: List (a -> b) -> a -> List b
-seqf = error "todo"
+seqf fs a = maap ($ a) fs
 
 -- Exercise 10
 -- Relative Difficulty: 10
@@ -132,7 +132,7 @@ seqf = error "todo"
 -- Elegance: 2.5 marks
 -- Total: 10
 rev :: List a -> List a
-rev = error "todo"
+rev = foldLeft (flip (:|)) Nil
 
 -- Exercise 10.1
 -- How to produce arbitrary instances of List

@@ -11,40 +11,45 @@ class Misty m where
   -- Relative Difficulty: 3
   -- (use banana and unicorn)
   furry' :: (a -> b) -> m a -> m b
-  furry' = error "todo"
+  furry' f = banana (unicorn . f)
 
 -- Exercise 5
 -- Relative Difficulty: 2
 instance Misty List where
-  banana = error "todo"
-  unicorn = error "todo"
+  banana = flatMap
+  unicorn = (:|Nil)
 
 -- Exercise 6
 -- Relative Difficulty: 2
 instance Misty Optional where
-  banana = error "todo"
-  unicorn = error "todo"
+  banana _ Empty = Empty
+  banana f (Full a) = f a
+  unicorn = Full
 
 -- Exercise 7
 -- Relative Difficulty: 3
 instance Misty ((->) t) where
-  banana = error "todo"
-  unicorn = error "todo"
+  --banana :: (a -> t -> b) -> (t -> a) -> (t -> b)
+  banana f g = \t -> f (g t) t
+  unicorn = const
 
 -- Exercise 8
 -- Relative Difficulty: 2
 jellybean :: Misty m => m (m a) -> m a
-jellybean = error "todo"
+jellybean = banana id
 
 -- Exercise 9
 -- Relative Difficulty: 3
 sausage :: Misty m => [m a] -> m [a]
-sausage = error "todo"
+sausage = foldr (\x acc -> banana (\a -> furry' (a:) acc) x) (unicorn [])
+--sausage [] = unicorn []
+--sausage (x:xs) = banana (\a -> furry' (a:) (sausage xs)) x
+
 
 -- Exercise 10
 -- Relative Difficulty: 3
 moppy :: Misty m => (a -> m b) -> [a] -> m [b]
-moppy = error "todo"
+moppy f = sausage . map f
 
 -- Exercise 11
 -- Relative Difficulty: 4
