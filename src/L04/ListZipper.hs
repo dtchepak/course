@@ -2,8 +2,9 @@
 
 module L04.ListZipper where
 
+import Data.Foldable as F (any)
 import Data.List
-import Data.Maybe (maybe)
+import Data.Maybe (maybe, fromJust)
 import L03.Fluffy
 
 -- A `ListZipper` is a focussed position, with a list of values to the left and to the right.
@@ -135,7 +136,7 @@ hasLeft ::
   f a
   -> Bool
 hasLeft =
-  maybe False (\(ListZipper l _ _) -> not $ null l) . maybeZip 
+  F.any (\(ListZipper l _ _) -> not $ null l) . maybeZip 
 
 -- Exercise 8
 -- Relative Difficulty: 2
@@ -145,7 +146,7 @@ hasRight ::
   f a
   -> Bool
 hasRight =
-  maybe False (\(ListZipper _ _ r) -> not $ null r) . maybeZip
+  F.any (\(ListZipper _ _ r) -> not $ null r) . maybeZip
 
 
 getFocus :: ListZipper a -> a
@@ -183,7 +184,9 @@ moveLeftLoop ::
   ListZipper' f =>
   f a
   -> f a
-moveLeftLoop z = undefined --if hasLeft z then toMaybeListZipper $ moveLeft z else end z
+moveLeftLoop z = if hasLeft z 
+                 then fromListZipper . fromJust . maybeZip . moveLeft $ z
+                 else end z
 
 -- Exercise 12
 -- Relative Difficulty: 4
@@ -192,8 +195,9 @@ moveRightLoop ::
   ListZipper' f =>
   f a
   -> f a
-moveRightLoop =
-  error "todo"
+moveRightLoop z = if hasRight z 
+                  then fromListZipper . fromJust . maybeZip . moveRight $ z
+                  else start z
 
 -- Exercise 13
 -- Relative Difficulty: 3
@@ -202,8 +206,10 @@ moveLeft ::
   ListZipper' f =>
   f a
   -> MaybeListZipper a
-moveLeft =
-  error "todo"
+moveLeft z = case toMaybeListZipper z of
+    IsZ (ListZipper [] _ _) -> IsNotZ
+    IsZ (ListZipper (l:ls) c r) -> IsZ (ListZipper ls l (c:r))
+    IsNotZ -> IsNotZ
 
 -- Exercise 14
 -- Relative Difficulty: 3
@@ -212,8 +218,10 @@ moveRight ::
   ListZipper' f =>
   f a
   -> MaybeListZipper a
-moveRight =
-  error "todo"
+moveRight z = case toMaybeListZipper z of
+    IsZ (ListZipper _ _ []) -> IsNotZ
+    IsZ (ListZipper l c (r:rs)) -> IsZ (ListZipper (c:l) r rs)
+    IsNotZ -> IsNotZ
 
 -- Exercise 15
 -- Relative Difficulty: 3
@@ -330,8 +338,7 @@ end ::
   ListZipper' f =>
   f a
   -> f a
-end =
-  error "todo"
+end = error "todo"
 
 -- Exercise 26
 -- Relative Difficulty: 5
