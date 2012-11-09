@@ -201,6 +201,16 @@ moveRightLoop z = if hasRight z
                   then fromListZipper . fromJust . maybeZip . moveRight $ z
                   else start z
 
+
+updateIfListZipper :: 
+    ListZipper' f => 
+    (ListZipper a -> MaybeListZipper a)
+    -> f a
+    -> MaybeListZipper a
+updateIfListZipper f z = case toMaybeListZipper z of
+    IsZ lz -> f lz
+    IsNotZ -> IsNotZ
+
 -- Exercise 13
 -- Relative Difficulty: 3
 -- Move the zipper one position to the left.
@@ -208,10 +218,10 @@ moveLeft ::
   ListZipper' f =>
   f a
   -> MaybeListZipper a
-moveLeft z = case toMaybeListZipper z of
-    IsZ (ListZipper [] _ _) -> IsNotZ
-    IsZ (ListZipper (l:ls) c r) -> IsZ (ListZipper ls l (c:r))
-    IsNotZ -> IsNotZ
+moveLeft = updateIfListZipper $ 
+    \lz -> case lz of
+        ListZipper [] _ _     -> IsNotZ
+        ListZipper (l:ls) c r -> IsZ (ListZipper ls l (c:r))
 
 -- Exercise 14
 -- Relative Difficulty: 3
@@ -220,10 +230,10 @@ moveRight ::
   ListZipper' f =>
   f a
   -> MaybeListZipper a
-moveRight z = case toMaybeListZipper z of
-    IsZ (ListZipper _ _ []) -> IsNotZ
-    IsZ (ListZipper l c (r:rs)) -> IsZ (ListZipper (c:l) r rs)
-    IsNotZ -> IsNotZ
+moveRight = updateIfListZipper $
+    \lz -> case lz of
+        ListZipper _ _ [] -> IsNotZ
+        ListZipper l c (r:rs) -> IsZ (ListZipper (c:l) r rs)
 
 -- Exercise 15
 -- Relative Difficulty: 3
@@ -232,10 +242,10 @@ swapLeft ::
   ListZipper' f =>
   f a
   -> MaybeListZipper a
-swapLeft z = case toMaybeListZipper z of
-    IsZ (ListZipper [] _ _) -> IsNotZ
-    IsZ (ListZipper (l:ls) c r) -> IsZ (ListZipper (c:ls) l r)
-    IsNotZ -> IsNotZ
+swapLeft = updateIfListZipper $
+    \lz -> case lz of
+        ListZipper [] _ _ -> IsNotZ
+        ListZipper (l:ls) c r -> IsZ (ListZipper (c:ls) l r)
 
 -- Exercise 16
 -- Relative Difficulty: 3
@@ -244,10 +254,10 @@ swapRight ::
   ListZipper' f =>
   f a
   -> MaybeListZipper a
-swapRight z = case toMaybeListZipper z of
-    IsZ (ListZipper _ _ []) -> IsNotZ
-    IsZ (ListZipper l c (r:rs)) -> IsZ (ListZipper l r (c:rs))
-    IsNotZ -> IsNotZ
+swapRight = updateIfListZipper $
+    \lz -> case lz of
+        ListZipper _ _ [] -> IsNotZ
+        ListZipper l c (r:rs) -> IsZ (ListZipper l r (c:rs))
 
 -- Exercise 17
 -- Relative Difficulty: 3
