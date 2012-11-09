@@ -264,8 +264,9 @@ dropLefts ::
   ListZipper' f =>
   f a
   -> f a
-dropLefts =
-  error "todo"
+dropLefts z = case toMaybeListZipper z of
+    IsZ (ListZipper _ c r) -> fromListZipper (ListZipper [] c r)
+    IsNotZ -> z
 
 -- Exercise 18
 -- Relative Difficulty: 3
@@ -274,8 +275,9 @@ dropRights ::
   ListZipper' f =>
   f a
   -> f a
-dropRights =
-  error "todo"
+dropRights z = case toMaybeListZipper z of
+    IsZ (ListZipper l c _) -> fromListZipper (ListZipper l c [])
+    IsNotZ -> z
 
 -- Exercise 19
 -- Relative Difficulty: 4
