@@ -230,8 +230,10 @@ swapLeft ::
   ListZipper' f =>
   f a
   -> MaybeListZipper a
-swapLeft =
-  error "todo"
+swapLeft z = case toMaybeListZipper z of
+    IsZ (ListZipper [] _ _) -> IsNotZ
+    IsZ (ListZipper (l:ls) c r) -> IsZ (ListZipper (c:ls) l r)
+    IsNotZ -> IsNotZ
 
 -- Exercise 16
 -- Relative Difficulty: 3
@@ -240,8 +242,10 @@ swapRight ::
   ListZipper' f =>
   f a
   -> MaybeListZipper a
-swapRight =
-  error "todo"
+swapRight z = case toMaybeListZipper z of
+    IsZ (ListZipper _ _ []) -> IsNotZ
+    IsZ (ListZipper l c (r:rs)) -> IsZ (ListZipper l r (c:rs))
+    IsNotZ -> IsNotZ
 
 -- Exercise 17
 -- Relative Difficulty: 3
@@ -327,8 +331,9 @@ index ::
   ListZipper' f =>
   f a
   -> Maybe Int
-index =
-  error "todo"
+index z = case toMaybeListZipper z of
+    IsZ (ListZipper l _ _) -> Just $ length l
+    IsNotZ -> Nothing
 
 -- Exercise 25
 -- Relative Difficulty: 5
