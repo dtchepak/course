@@ -340,7 +340,11 @@ end ::
   ListZipper' f =>
   f a
   -> f a
-end = error "todo"
+end z = if hasRight z
+        then case moveRight z of
+            IsZ lz -> end (fromListZipper lz)
+            IsNotZ -> z
+        else z
 
 -- Exercise 26
 -- Relative Difficulty: 5
@@ -349,8 +353,11 @@ start ::
   ListZipper' f =>
   f a
   -> f a
-start =
-  error "todo"
+start z = if hasLeft z
+          then case moveLeft z of
+              IsZ lz -> start (fromListZipper lz)
+              IsNotZ -> z
+          else z
 
 -- Exercise 27
 -- Relative Difficulty: 5
