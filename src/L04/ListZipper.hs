@@ -289,8 +289,10 @@ moveLeftN ::
   Int
   -> f a
   -> MaybeListZipper a
-moveLeftN =
-  error "todo"
+moveLeftN n
+    | n == 0 = toMaybeListZipper
+    | n < 0  = moveRightN (-n)
+    | otherwise = moveLeftN (n-1) . moveLeft
 
 -- Exercise 20
 -- Relative Difficulty: 4
@@ -300,8 +302,10 @@ moveRightN ::
   Int
   -> f a
   -> MaybeListZipper a
-moveRightN =
-  error "todo"
+moveRightN n
+    | n == 0 = toMaybeListZipper
+    | n < 0  = moveLeftN (-n)
+    | otherwise = moveRightN (n-1) . moveRight
 
 -- Exercise 21
 -- Relative Difficulty: 6
