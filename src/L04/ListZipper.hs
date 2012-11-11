@@ -289,10 +289,9 @@ moveLeftN ::
   Int
   -> f a
   -> MaybeListZipper a
-moveLeftN n
-    | n == 0 = toMaybeListZipper
-    | n < 0  = moveRightN (-n)
-    | otherwise = moveLeftN (n-1) . moveLeft
+moveLeftN n z = case moveLeftN' n z of
+    Left _ -> IsNotZ
+    Right z' -> toMaybeListZipper z'
 
 -- Exercise 20
 -- Relative Difficulty: 4
@@ -302,10 +301,9 @@ moveRightN ::
   Int
   -> f a
   -> MaybeListZipper a
-moveRightN n
-    | n == 0 = toMaybeListZipper
-    | n < 0  = moveLeftN (-n)
-    | otherwise = moveRightN (n-1) . moveRight
+moveRightN n z = case moveRightN' n z of
+    Left _ -> IsNotZ
+    Right z' -> toMaybeListZipper z'
 
 -- Exercise 21
 -- Relative Difficulty: 6
@@ -316,8 +314,16 @@ moveLeftN' ::
   Int
   -> f a
   -> Either Int (f a)
-moveLeftN' =
-  error "todo"
+moveLeftN' n z =
+    let doMove n' z' move =
+            if n'<0 then moveRightN' (-n') z'
+            else
+                if n' == 0 then Right z'
+                else
+                    case moveLeft z' of
+                        IsZ lz -> doMove (pred n') (fromListZipper lz) (succ move)
+                        IsNotZ -> Left . pred $ move
+    in doMove n z 1
 
 -- Exercise 22
 -- Relative Difficulty: 6
@@ -328,8 +334,16 @@ moveRightN' ::
   Int
   -> f a
   -> Either Int (f a)
-moveRightN' =
-  error "todo"
+moveRightN' n z =
+    let doMove n' z' move =
+            if n'<0 then moveLeftN' (-n') z'
+            else
+                if n' == 0 then Right z'
+                else
+                    case moveRight z' of
+                        IsZ lz -> doMove (pred n') (fromListZipper lz) (succ move)
+                        IsNotZ -> Left . pred $ move
+    in doMove n z 1
 
 -- Exercise 23
 -- Relative Difficulty: 7
@@ -387,8 +401,9 @@ deletePullLeft ::
   ListZipper' f =>
   f a
   -> MaybeListZipper a
-deletePullLeft =
-  error "todo"
+deletePullLeft z = case toMaybeListZipper z of
+    IsZ (ListZipper (l:ls) _ r) -> IsZ (ListZipper ls l r)
+    _ -> IsNotZ
 
 -- Exercise 28
 -- Relative Difficulty: 5
@@ -397,8 +412,9 @@ deletePullRight ::
   ListZipper' f =>
   f a
   -> MaybeListZipper a
-deletePullRight =
-  error "todo"
+deletePullRight z = case toMaybeListZipper z of
+    IsZ (ListZipper l _ (r:rs)) -> IsZ (ListZipper l r rs)
+    _ -> IsNotZ
 
 -- Exercise 29
 -- Relative Difficulty: 5
@@ -408,8 +424,9 @@ insertPushLeft ::
   a
   -> f a
   -> f a
-insertPushLeft =
-  error "todo"
+insertPushLeft x z = case toMaybeListZipper z of
+    IsZ (ListZipper l c r) -> fromListZipper (ListZipper (c:l) x r)
+    _ -> z
 
 -- Exercise 30
 -- Relative Difficulty: 5
@@ -419,8 +436,9 @@ insertPushRight ::
   a
   -> f a
   -> f a
-insertPushRight =
-  error "todo"
+insertPushRight x z = case toMaybeListZipper z of
+    IsZ (ListZipper l c r) -> fromListZipper (ListZipper l x (c:r))
+    _ -> z
 
 -- Let's start using proper type-class names.
 --
@@ -539,3 +557,9 @@ instance Show a => Show (ListZipper a) where
 instance Show a => Show (MaybeListZipper a) where
   show (IsZ z) = show z
   show IsNotZ = "∅"
+
+
+{- NOTES
+ - * Is using "_" in a case block bad? Seems a bit lazy, doesn't communicate all cases
+ - * Mapping into a ListZipper'? Just want to adjust the inner bit.
+ -}
