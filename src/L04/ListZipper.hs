@@ -148,10 +148,6 @@ hasRight ::
 hasRight =
   F.any (\(ListZipper _ _ r) -> not $ null r) . maybeZip
 
-
-getFocus :: ListZipper a -> a
-getFocus (ListZipper _ c _) = c
-
 -- Exercise 9
 -- Relative Difficulty: 3
 -- Seek to the left for a location matching a predicate, starting from the
@@ -162,7 +158,7 @@ findLeft ::
   -> f a
   -> MaybeListZipper a
 findLeft p =
-  maybe IsNotZ (\lz -> if p (getFocus lz) then toMaybeListZipper lz 
+  maybe IsNotZ (\lz -> if p (counit lz) then toMaybeListZipper lz 
                        else findLeft p (moveLeft lz)) . maybeZip
 
 -- Exercise 10
@@ -175,7 +171,7 @@ findRight ::
   -> f a
   -> MaybeListZipper a
 findRight p =
-  maybe IsNotZ (\lz -> if p (getFocus lz) then toMaybeListZipper lz 
+  maybe IsNotZ (\lz -> if p (counit lz) then toMaybeListZipper lz 
                        else findRight p (moveRight lz)) . maybeZip
 
 -- Exercise 11
@@ -479,21 +475,26 @@ instance Traversable [] where
   traverse f =
     foldr (\a b -> furry (:) (f a) <*> b) (unit [])
 
+instance Apply [] where
+    [] <*> _ = []
+    (f:fs) <*> xs = foldr (\x acc -> (f x):acc) (fs <*> xs) xs
+
 -- Exercise 31
 -- Relative Difficulty: 6
 -- Implement the `Apply` instance for `ListZipper`.
 -- This implementation zips functions with values by function application.
 instance Apply ListZipper where
-  (<*>) =
-    error "todo"
+  (ListZipper lf cf rf) <*> (ListZipper l c r) = 
+        ListZipper (lf <*> l) (cf c) (rf <*> r)
 
 -- Exercise 32
 -- Relative Difficulty: 4
 -- Implement the `Apply` instance for `MaybeListZipper`.
 -- ~~~ Use (<*>) for `ListZipper`.
 instance Apply MaybeListZipper where
-  (<*>) =
-    error "todo"
+  IsNotZ <*> _ = IsNotZ
+  _ <*> IsNotZ = IsNotZ
+  (IsZ fz) <*> (IsZ z) = IsZ (fz <*> z)
 
 -- Exercise 33
 -- Relative Difficulty: 5
@@ -501,16 +502,14 @@ instance Apply MaybeListZipper where
 -- This implementation produces an infinite list zipper (to both left and right).
 -- ~~~ Use Data.List#repeat.
 instance Applicative ListZipper where
-  unit =
-    error "todo"
+  unit x = ListZipper (repeat x) x (repeat x)
 
 -- Exercise 34
 -- Relative Difficulty: 4
 -- Implement the `Applicative` instance for `MaybeListZipper`.
 -- ~~~ Use unit for `ListZipper`.
 instance Applicative MaybeListZipper where
-  unit =
-    error "todo"
+  unit = IsZ . unit
 
 -- Exercise 35
 -- Relative Difficulty: 7
@@ -518,6 +517,7 @@ instance Applicative MaybeListZipper where
 -- This implementation "visits" every possible zipper value derivable from a given zipper (i.e. all zippers to the left and right).
 -- ~~~ Use unit Data.List#unfoldr.
 instance Extend ListZipper where
+  -- (<<=) :: (ListZipper a -> b) -> ListZipper a -> ListZipper b
   (<<=) =
     error "todo"
 
@@ -526,8 +526,7 @@ instance Extend ListZipper where
 -- Implement the `Comonad` instance for `ListZipper`.
 -- This implementation returns the current focus of the zipper.
 instance Comonad ListZipper where
-  counit =
-    error "todo"
+  counit (ListZipper _ c _) = c
 
 -- Exercise 37
 -- Relative Difficulty: 10
