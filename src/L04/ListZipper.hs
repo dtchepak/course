@@ -518,8 +518,13 @@ instance Applicative MaybeListZipper where
 -- ~~~ Use unit Data.List#unfoldr.
 instance Extend ListZipper where
   -- (<<=) :: (ListZipper a -> b) -> ListZipper a -> ListZipper b
-  (<<=) =
-    error "todo"
+  f <<= z = furry f (duplicate z)
+
+duplicate :: ListZipper a -> ListZipper (ListZipper a)
+duplicate z = 
+    let lefts = unfoldr (\l -> fmap (,moveLeft l) (toMaybe l)) (moveLeft z)
+        rights = unfoldr (\l -> fmap (,moveRight l) (toMaybe l)) (moveRight z)
+    in ListZipper lefts z rights
 
 -- Exercise 36
 -- Relative Difficulty: 3

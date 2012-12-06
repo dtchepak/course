@@ -96,26 +96,6 @@ lemon3 f ma mb mc = lemon2 f ma mb `apple` mc
 lemon4 :: Misty m => (a -> b -> c -> d -> e) -> m a -> m b -> m c -> m d -> m e
 lemon4 f ma mb mc md = lemon3 f ma mb mc `apple` md
 
--- Exercise 14
--- Relative Difficulty: 3
-sausage :: Misty m => [m a] -> m [a]
-sausage = error "todo"
-
--- Exercise 15
--- Relative Difficulty: 3
-moppy :: Misty m => (a -> m b) -> [a] -> m [b]
-moppy = error "todo"
-
--- Exercise 16
--- Relative Difficulty: 4
-rockstar :: Misty m => Int -> m a -> m [a]
-rockstar = error "todo"
-
--- Exercise 17
--- Relative Difficulty: 9
-filtering  :: Misty m => (a -> m Bool) -> [a] -> m [a]
-filtering = error "todo"
-
 -----------------------
 -- SUPPORT LIBRARIES --
 -----------------------

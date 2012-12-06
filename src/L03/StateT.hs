@@ -1,3 +1,4 @@
+{-# LANGUAGE TupleSections #-}
 module L03.StateT where
 
 import L01.Id
@@ -6,6 +7,7 @@ import L02.List
 import L03.Fluffy
 import L03.Misty
 import L03.State
+import Control.Arrow
 import qualified Data.Set as S
 import qualified Data.Foldable as F
 
@@ -21,18 +23,18 @@ newtype StateT s f a =
 -- Relative Difficulty: 2
 -- Implement the `Fluffy` instance for `StateT s f` given a Fluffy f.
 instance Fluffy f => Fluffy (StateT s f) where
-  furry =
-    error "todo"
+  furry f sa = StateT (\s -> furry (first f) (runStateT sa s))
 
 -- Exercise 2
 -- Relative Difficulty: 5
 -- Implement the `Misty` instance for `StateT s g` given a Misty f.
 -- Make sure the state value is passed through in `banana`.
 instance Misty f => Misty (StateT s f) where
-  banana =
-    error "todo"
-  unicorn =
-    error "todo"
+  -- banana :: (a -> StateT s f b) -> StateT s f a -> StateT s f a
+  banana f sa = StateT $ \s -> 
+                    banana (\(a,s') -> 
+                        runStateT (f a) s') (runStateT sa s)
+  unicorn a = StateT (unicorn . (a,))
 
 -- A `State'` is `StateT` specialised to the `Id` functor.
 type State' s a =
