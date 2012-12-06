@@ -522,8 +522,9 @@ instance Extend ListZipper where
 
 duplicate :: ListZipper a -> ListZipper (ListZipper a)
 duplicate z = 
-    let lefts = unfoldr (\l -> fmap (,moveLeft l) (toMaybe l)) (moveLeft z)
-        rights = unfoldr (\l -> fmap (,moveRight l) (toMaybe l)) (moveRight z)
+    let π move = unfoldr (\l -> fmap (,move l) (toMaybe l))
+        lefts = π moveLeft (moveLeft z)
+        rights = π moveRight (moveRight z)
     in ListZipper lefts z rights
 
 -- Exercise 36
