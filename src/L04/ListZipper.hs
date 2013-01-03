@@ -1,4 +1,5 @@
 {-# OPTIONS_GHC -fno-warn-unused-imports #-}
+{-# LANGUAGE TupleSections #-}
 
 module L04.ListZipper where
 
@@ -157,9 +158,20 @@ findLeft ::
   (a -> Bool)
   -> f a
   -> MaybeListZipper a
-findLeft p =
-  maybe IsNotZ (\lz -> if p (counit lz) then toMaybeListZipper lz 
-                       else findLeft p (moveLeft lz)) . maybeZip
+findLeft p = updateIfListZipper $
+    \lz -> let lefts = left . duplicate $ lz
+               maybeZ = find (p . counit) lefts
+           in maybe IsNotZ IsZ maybeZ
+
+left :: ListZipper a -> [a]
+left (ListZipper l _ _) = l
+
+--  maybe IsNotZ (\lz -> if p (counit lz) then toMaybeListZipper lz 
+--                       else findLeft p (moveLeft lz)) . maybeZip
+-- with comonad:
+--  duplicate to get z (z a)
+--  lefts to get [z a] (all items left)
+--  use list find to get the answer
 
 -- Exercise 10
 -- Relative Difficulty: 3
