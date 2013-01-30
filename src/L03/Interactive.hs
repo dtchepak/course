@@ -131,7 +131,16 @@ reverseInteractive =
 encodeInteractive ::
   IO ()
 encodeInteractive =
-  error "todo"
+  let encode ' '  = "%20"
+      encode '\t' = "%09"
+      encode '"'  = "%22"
+      encode c    = [c]
+      encodeAll   = bind encode
+  in
+    putStr "Enter string to url-encode: " >-
+    getLine >>- 
+    (return . encodeAll) >>-
+    putStrLn
 
 interactive ::
   IO ()
