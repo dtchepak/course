@@ -131,16 +131,15 @@ reverseInteractive =
 encodeInteractive ::
   IO ()
 encodeInteractive =
-  let encode ' '  = "%20"
-      encode '\t' = "%09"
-      encode '"'  = "%22"
-      encode c    = [c]
-      encodeAll   = bind encode
-  in
-    putStr "Enter string to url-encode: " >-
-    getLine >>- 
-    (return . encodeAll) >>-
-    putStrLn
+  let encode :: String -> String
+      encode = bind $ \c -> case c of
+                          ' '  -> "%20"
+                          '\t' -> "%09"
+                          '"'  -> "%22"
+                          _    -> [c]
+  in putStr "Enter string to url-encode: " >-
+     getLine >>-
+     (putStrLn . encode)
 
 interactive ::
   IO ()
