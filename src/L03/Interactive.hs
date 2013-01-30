@@ -81,7 +81,19 @@ data Op =
 convertInteractive ::
   IO ()
 convertInteractive =
-  error "todo"
+  putStr "Enter a string to convert to upper-case: " >-
+  (fmaap' . fmaap') toUpper getLine >>-
+  putStrLn
+
+--  Without mapping toUpper over each char from getLine:
+--    putStr "Enter a string to convert to upper-case: " >-
+--    getLine >>- \line -> 
+--    let upper = fmaap' toUpper line 
+--    in putStrLn upper
+--  More succinct version of the same:
+--    putStr "Enter a string to convert to upper-case: " >-
+--    getLine >>-
+--    (putStrLn . fmaap' toUpper)
 
 -- Exercise 2
 -- * Ask the user to enter a file name to reverse.
@@ -98,7 +110,12 @@ convertInteractive =
 reverseInteractive ::
   IO ()
 reverseInteractive =
-  error "todo"
+  putStr "Enter a file name to reverse: " >-
+  getLine >>- \i ->
+  putStr "Enter a file name to write reversed file to: " >-
+  getLine >>- \o ->
+  reverse `fmaap'` readFile i >>- 
+  writeFile o
 
 -- Exercise 3
 -- * Ask the user to enter a string to url-encode.
