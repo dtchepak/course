@@ -1,4 +1,5 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
+{-# LANGUAGE TupleSections #-}
 
 module L03.State where
 
@@ -22,18 +23,25 @@ newtype State s a =
 -- Relative Difficulty: 2
 -- Implement the `Fuunctor` instance for `State s`.
 instance Fuunctor (State s) where
-  fmaap =
-    error "todo"
+  fmaap f sa =
+    State $ \s -> let (a,s') = runState sa s
+                  in (f a, s')
 
 -- Exercise 2
 -- Relative Difficulty: 3
 -- Implement the `Moonad` instance for `State s`.
 -- Make sure the state value is passed through in `bind`.
 instance Moonad (State s) where
-  bind =
-    error "todo"
+  bind f sa =
+    State $ \s -> let (a,s') = runState sa s
+                  in runState (f a) s'
   reeturn =
-    error "todo"
+    State . (,)
+    -- OR:
+    --      reeturn a = State (\s -> (a,s))
+    --      reeturn a = State (a,)              -- by tuple section
+    --      reeturn a = State ((,) a)           -- move (,) to prefix pos
+    --      reeturn   = State . (,)             -- by (f.g) = \x -> f (g x)
 
 -- Exercise 3
 -- Relative Difficulty: 1
@@ -42,8 +50,8 @@ exec ::
   State s a
   -> s
   -> s
-exec =
-  error "todo"
+exec sa = 
+  snd . runState sa
 
 -- Exercise 4
 -- Relative Difficulty: 1
@@ -52,8 +60,8 @@ eval ::
   State s a
   -> s
   -> a
-eval =
-  error "todo"
+eval sa =
+  fst . runState sa
 
 -- Exercise 5
 -- Relative Difficulty: 2
@@ -61,7 +69,7 @@ eval =
 get ::
   State s s
 get =
-  error "todo"
+  State $ \s -> (s,s)
 
 -- Exercise 6
 -- Relative Difficulty: 2
@@ -70,7 +78,7 @@ put ::
   s
   -> State s ()
 put =
-  error "todo"
+  State . const . ((),)
 
 -- Exercise 7
 -- Relative Difficulty: 5
@@ -87,8 +95,11 @@ findM ::
   (a -> f Bool)
   -> List a
   -> f (Optional a)
-findM =
-  error "todo"
+--findM _ Nil = reeturn Empty
+--findM f (h:|t) = bind (\b -> if b then reeturn (Full h) else findM f t) (f h)
+findM f = foldRight (\h acc -> 
+            bind (\b -> if b then reeturn (Full h) else acc) (f h)) 
+            (reeturn Empty)
 
 -- Exercise 8
 -- Relative Difficulty: 4
