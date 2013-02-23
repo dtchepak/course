@@ -7,6 +7,8 @@ import L01.Optional
 import L02.List
 import L03.Fuunctor
 import L03.Moonad
+import Control.Applicative
+import Control.Arrow
 import Data.Char
 import qualified Data.Set as S
 import qualified Data.Foldable as F
@@ -111,7 +113,21 @@ firstRepeat ::
   List a
   -> Optional a
 firstRepeat =
-  error "todo"
+  --Showing all details of how State is updated:
+  --    flip eval S.empty 
+  --      . findM (\x -> State (\s -> if x `S.member` s then (True,s) else (False, x `S.insert` s)))
+  --Collapsing if statement:
+  --    flip eval S.empty 
+  --      . findM (\x -> State (\s -> (x `S.member` s,x `S.insert` s)))
+  --Apply s to both sides of tuple (using (&&&) from Control.Arrow):
+  --    flip eval S.empty
+  --      . findM (\x -> State $ (x `S.member`) &&& (x `S.insert`))
+  --Tidy up
+  --    flip eval S.empty
+  --      . findM (\x -> State $ S.member x &&& S.insert x)
+  --c/o @dibblego
+  flip eval S.empty
+    . findM (State . liftA2 (&&&) S.member S.insert)
 
 -- Exercise 9
 -- Relative Difficulty: 5
@@ -127,8 +143,15 @@ filterM ::
   (a -> f Bool)
   -> List a
   -> f (List a)
-filterM =
-  error "todo"
+--filterM _ Nil = reeturn Nil
+--filterM f (x:|xs) = 
+--        bind (\p -> 
+--            if p then lift2 (:|) (reeturn x) (filterM f xs) else filterM f xs) 
+--        (f x)
+filterM f = 
+    foldRight 
+        (\x acc -> (\p -> if p then fmaap' (x:|) acc else acc) `bind` (f x)) 
+        (reeturn Nil)
 
 -- Exercise 10
 -- Relative Difficulty: 4
@@ -138,8 +161,12 @@ distinct ::
   Ord a =>
   List a
   -> List a
+--distinct xs =
+--  flip eval S.empty 
+--    (filterM (\x -> State (\s -> (not (x `S.member` s), x `S.insert` s))) xs)
 distinct =
-  error "todo"
+  flip eval S.empty 
+    . (filterM (State . liftA2 (&&&) S.notMember S.insert))
 
 -- Exercise 11
 -- Relative Difficulty: 3
@@ -149,8 +176,8 @@ produce ::
   (a -> a)
   -> a
   -> List a
-produce =
-  error "todo"
+produce f a = 
+    a :| produce f (f a)
 
 -- Exercise 12
 -- Relative Difficulty: 10
@@ -164,7 +191,36 @@ isHappy ::
   Integer
   -> Bool
 isHappy =
-  error "todo"
+    let nextSum :: Integer -> Integer
+        nextSum = sum 
+                    . map 
+                        ( flaatten (*)
+                        . toInteger
+                        . digitToInt)
+                    . show
+    in F.elem 1 . firstRepeat . produce nextSum
+
+-- if cycle detected before reaching 1 then not happy
+--
+-- Happy:
+-- 7 -> [49] -> 49
+--      49 -> [16,81] -> 97
+--      97 -> [81,49] -> 130
+--      130-> [1,9,0] -> 10
+--      10 -> [1,0]   -> 1
+--      1
+--
+-- Sad:
+-- 2 -> [4] -> 4
+--      4 -> [16] -> 16
+--      16 -> [1,36] -> 37
+--      37 -> [9,49] -> 58
+--      58 -> [25,64] -> 89
+--      89 -> [64,81] -> 145
+--      145 -> [1,16,25] -> 42
+--      42 -> [16,4] -> 20
+--      20 -> [4,0] -> 4
+--      4 ... repeats
 
 -----------------------
 -- SUPPORT LIBRARIES --
