@@ -140,7 +140,9 @@ distinctF ::
   List a
   -> Optional (List a)
 distinctF =
-  error "todo"
+  -- StateT s Optional a { runState :: s -> Optional (a,s) }
+  flip evalT S.empty . filterM (\a -> if a>100 then StateT (const Empty)
+                                      else StateT (Full . (S.notMember a &&& S.insert a)))
 
 -- An `OptionalT` is a functor of an `Optional` value.
 data OptionalT f a =
@@ -153,15 +155,14 @@ data OptionalT f a =
 -- Relative Difficulty: 3
 -- Implement the `Fuunctor` instance for `OptionalT f` given a Fuunctor f.
 instance Fuunctor f => Fuunctor (OptionalT f) where
-  fmaap =
-    error "todo"
+  fmaap f =
+    OptionalT . (fmaap.fmaap) f . runOptionalT
 
 -- Exercise 14
 -- Relative Difficulty: 5
 -- Implement the `Moonad` instance for `OptionalT f` given a Moonad f.
 instance Moonad f => Moonad (OptionalT f) where
-  reeturn =
-    error "todo"
+  reeturn = OptionalT . reeturn . reeturn
   bind =
     error "todo"
 
