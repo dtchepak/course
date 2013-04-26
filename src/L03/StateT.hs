@@ -21,18 +21,19 @@ newtype StateT s f a =
 -- Relative Difficulty: 2
 -- Implement the `Fuunctor` instance for `StateT s f` given a Fuunctor f.
 instance Fuunctor f => Fuunctor (StateT s f) where
-  fmaap =
-    error "todo"
+  fmaap f (StateT run) =
+        StateT $ fmaap (\(a,s) -> (f a, s)) . run
 
 -- Exercise 2
 -- Relative Difficulty: 5
 -- Implement the `Moonad` instance for `StateT s g` given a Moonad f.
 -- Make sure the state value is passed through in `bind`.
 instance Moonad f => Moonad (StateT s f) where
-  bind =
-    error "todo"
-  reeturn =
-    error "todo"
+  -- bind :: (a -> m b) -> m a -> m b
+  --      :: (a -> StateT s b) -> StateT s a -> StateT s b
+  bind f (StateT run) = StateT $ let f' = \(a,s') -> runStateT (f a) s'
+                                 in bind f' . run
+  reeturn a = StateT $ \s -> reeturn (a, s)
 
 -- A `State'` is `StateT` specialised to the `Id` functor.
 type State' s a =
@@ -44,8 +45,8 @@ type State' s a =
 state' ::
   (s -> (a, s))
   -> State' s a
-state' =
-  error "todo"
+state' f = StateT (reeturn . f)
+
 
 -- Exercise 4
 -- Relative Difficulty: 1
