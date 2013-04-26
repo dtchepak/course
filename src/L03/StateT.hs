@@ -1,3 +1,4 @@
+{-# LANGUAGE TupleSections #-}
 module L03.StateT where
 
 import L01.Id
@@ -8,6 +9,8 @@ import L03.Moonad
 import L03.State
 import qualified Data.Set as S
 import qualified Data.Foldable as F
+import Control.Arrow
+import Control.Applicative
 
 -- A `StateT` is a function from a state value `s` to a functor f of (a produced value `a`, and a resulting state `s`).
 newtype StateT s f a =
@@ -47,7 +50,6 @@ state' ::
   -> State' s a
 state' f = StateT (reeturn . f)
 
-
 -- Exercise 4
 -- Relative Difficulty: 1
 -- Provide an unwrapper for `State'` values.
@@ -55,8 +57,7 @@ runState' ::
   State' s a
   -> s
   -> (a, s)
-runState' =
-  error "todo"
+runState' (StateT run) = runId . run
 
 -- Exercise 5
 -- Relative Difficulty: 2
@@ -66,8 +67,7 @@ execT ::
   StateT s f a
   -> s
   -> f s
-execT =
-  error "todo"
+execT (StateT run) = fmaap snd . run
 
 -- Exercise 6
 -- Relative Difficulty: 1
@@ -76,8 +76,7 @@ exec' ::
   State' s a
   -> s
   -> s
-exec' =
-  error "todo"
+exec' st = runId . execT st
 
 -- Exercise 7
 -- Relative Difficulty: 2
@@ -87,8 +86,7 @@ evalT ::
   StateT s f a
   -> s
   -> f a
-evalT =
-  error "todo"
+evalT (StateT run) = fmaap fst . run
 
 -- Exercise 8
 -- Relative Difficulty: 1
@@ -97,8 +95,7 @@ eval' ::
   State' s a
   -> s
   -> a
-eval' =
-  error "todo"
+eval' st = runId . evalT st
 
 -- Exercise 9
 -- Relative Difficulty: 2
@@ -107,7 +104,7 @@ getT ::
   Moonad f =>
   StateT s f s
 getT =
-  error "todo"
+    StateT $ \s -> reeturn (s,s)
 
 -- Exercise 10
 -- Relative Difficulty: 2
@@ -117,7 +114,7 @@ putT ::
   s
   -> StateT s f ()
 putT =
-  error "todo"
+  StateT . const . reeturn . ((),)       -- \s -> StateT (\_ -> reeturn ((),s))
 
 -- Exercise 11
 -- Relative Difficulty: 4
@@ -128,7 +125,9 @@ distinct' ::
   List a
   -> List a
 distinct' =
-  error "todo"
+  --flip eval' S.empty . filterM (\a -> state' (\s -> (a `S.notMember` s, a `S.insert` s)))
+  --flip eval' S.empty . filterM (\a -> state' (S.notMember a &&& S.insert a))
+  flip eval' S.empty . filterM (state' . liftA2 (&&&) S.notMember S.insert)
 
 -- Exercise 12
 -- Relative Difficulty: 5
