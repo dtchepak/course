@@ -180,18 +180,18 @@ data Logger l a =
 -- Relative Difficulty: 4
 -- Implement the `Fuunctor` instance for `Logger`.
 instance Fuunctor (Logger l) where
-  fmaap =
-    error "todo"
+  fmaap f (Logger ls a) =
+    Logger ls (f a)
 
 -- Exercise 16
 -- Relative Difficulty: 5
 -- Implement the `Moonad` instance for `Logger`.
 -- The `bind` implementation must append log values to maintain associativity.
 instance Moonad (Logger l) where
-  reeturn =
-    error "todo"
-  bind =
-    error "todo"
+  reeturn = Logger []
+  bind f (Logger ls a) =
+    let (Logger ls' b) = f a
+    in Logger (ls ++ ls') b
 
 -- Exercise 17
 -- Relative Difficulty: 1
@@ -200,8 +200,8 @@ log1 ::
   l
   -> a
   -> Logger l a
-log1 =
-  error "todo"
+log1 = Logger . (:[])
+--log1 l = Logger [l]
 
 -- Exercise 18
 -- Relative Difficulty: 10
