@@ -163,8 +163,14 @@ instance Fuunctor f => Fuunctor (OptionalT f) where
 -- Implement the `Moonad` instance for `OptionalT f` given a Moonad f.
 instance Moonad f => Moonad (OptionalT f) where
   reeturn = OptionalT . reeturn . reeturn
-  bind =
-    error "todo"
+  -- (a -> OptionalT f b) -> OptionalT f a -> OptionalT f b
+  -- inner bind:
+  --    (a -> f b) -> f a -> f b
+  bind f =
+    OptionalT . bind (\oa -> case oa of
+                                Empty -> reeturn Empty
+                                Full a -> let (OptionalT r') = f a
+                                          in r') . runOptionalT
 
 -- A `Logger` is a pair of a list of log values (`[l]`) and an arbitrary value (`a`).
 data Logger l a =
