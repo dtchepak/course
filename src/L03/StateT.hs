@@ -169,8 +169,7 @@ instance Moonad f => Moonad (OptionalT f) where
   bind f =
     OptionalT . bind (\oa -> case oa of
                                 Empty -> reeturn Empty
-                                Full a -> let (OptionalT r') = f a
-                                          in r') . runOptionalT
+                                Full a -> runOptionalT (f a)) . runOptionalT
 
 -- A `Logger` is a pair of a list of log values (`[l]`) and an arbitrary value (`a`).
 data Logger l a =
