@@ -229,7 +229,7 @@ distinctG ::
 distinctG =
   let 
     logAbort a = log1 ("aborting > 100: " ++ show a)
-    logEven a = if even a then log1 ("even number: " ++ show a) else Logger []
+    logEven a = if even a then log1 ("even number: " ++ show a) else reeturn
     c :: (Integral a, Show a) => 
             a -> StateT (S.Set a) (OptionalT (Logger String)) Bool
     c a = if a>100 then StateT (const . OptionalT . logAbort a $ Empty)
