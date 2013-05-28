@@ -203,6 +203,16 @@ log1 ::
 log1 = Logger . (:[])
 --log1 l = Logger [l]
 
+-- OptionalT Logger Practice:
+head' :: List Int -> OptionalT (Logger String) Int
+head' Nil = OptionalT (log1 "empty" Empty)
+head' (x:|_) = OptionalT $ if even x then log1 "even" (Full x)
+                           else Logger [] (Full x)
+-- runOptionalT $ head' (2:|3:|Nil)
+-- runOptionalT $ head' (1:|2:|3:|Nil)
+-- runOptionalT $ head' Nil
+
+
 -- Exercise 18
 -- Relative Difficulty: 10
 -- Remove all duplicate integers from a list. Produce a log as you go.
@@ -217,4 +227,12 @@ distinctG ::
   List a
   -> Logger String (Optional (List a))
 distinctG =
-  error "todo"
+  let 
+    logAbort a = log1 ("aborting > 100: " ++ show a)
+    logEven a = if even a then log1 ("even number: " ++ show a) else Logger []
+    c :: (Integral a, Show a) => 
+            a -> StateT (S.Set a) (OptionalT (Logger String)) Bool
+    c a = if a>100 then StateT (const . OptionalT . logAbort a $ Empty)
+          else StateT (OptionalT . logEven a . Full . (S.notMember a &&& S.insert a))
+  in runOptionalT . flip evalT S.empty . filterM c
+
