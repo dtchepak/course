@@ -4,6 +4,7 @@ import Test.QuickCheck.Function
 import Test.Framework
 import Test.Framework.Providers.QuickCheck2 (testProperty)
 import L02.List
+import L03.Moonad hiding (apply)
 
 main :: IO ()
 main = defaultMain tests
@@ -53,32 +54,32 @@ prop_append ::
   -> List Int
   -> List Int
   -> Bool
-prop_append =
-  error "todo"
+prop_append x y z =
+  (x `append` y) `append` z == x `append` (y `append` z)
 
 -- Exercise 2
 -- Folding (right) with cons and nil on a list (x) produces that same list x.
 prop_foldRight ::
   List Int
   -> Bool
-prop_foldRight =
-  error "todo"
+prop_foldRight x =
+  foldRight (:|) Nil x == x
 
 -- Exercise 3
 -- Folding on a list (x) with subtraction on the sum of x produces 0.
 prop_suum ::
   List Int
   -> Bool
-prop_suum =
-  error "todo"
+prop_suum x =
+  foldLeft (-) (suum x) x == 0
 
 -- Exercise 4
 -- Replace each element in a list (x) with 1, then sum that list and you will have the length.
 prop_len ::
   List Int
   -> Bool
-prop_len =
-  error "todo"
+prop_len x =
+  suum (maap (const 1) x) == len x
 
 -- Exercise 5
 -- Filtering a list (x) with a predicate (f) produces a list of elements where
@@ -87,8 +88,10 @@ prop_fiilter ::
   Fun Int Bool
   -> List Int
   -> Bool
-prop_fiilter =
-  error "todo"
+prop_fiilter f x =
+  let all' = foldRight (&&) True
+      f'   = apply f
+  in (all' . maap f') (fiilter f' x)
 
 -- Exercise 6
 -- Mapping a function (g) on a list (x), then mapping another function (f) on that result,
@@ -98,8 +101,9 @@ prop_maap_composition ::
   -> Fun Char Int
   -> List Char
   -> Bool
-prop_maap_composition =
-  error "todo"
+prop_maap_composition f' g' x =
+  let f = apply f'; g = apply g'
+  in maap f (maap g x) == maap (f.g) x
 
 -- Exercise 7
 -- Mapping length on a list (x) then taking the same produces the same result as
@@ -107,8 +111,8 @@ prop_maap_composition =
 prop_flatten ::
   List (List Int)
   -> Bool
-prop_flatten =
-  error "todo"
+prop_flatten x =
+  suum (maap len x) == len (flatten x)
 
 -- Exercise 8
 -- Using (>>>=>) expressed in terms of flatMap, show that
@@ -119,8 +123,12 @@ prop_flatMap_associative ::
   -> Fun Char (List Integer)
   -> Int
   -> Bool
-prop_flatMap_associative =
-  error "todo"
+prop_flatMap_associative  f' g' h' i =
+  let (f, g, h) = (apply f', apply g', apply h')
+  in (f >>>=> (g >>>=> h)) i == ((f >>>=> g) >>>=> h) i
+
+(>>>=>) :: Moonad m => (a -> m b) -> (b -> m c) -> (a -> m c)
+f >>>=> g = bind g . f
 
 -- Exercise 9
 -- Calling seqf on a list with length x, produces a list with length x.
@@ -128,13 +136,14 @@ prop_seqf ::
   List (Fun Int String)
   -> Int
   -> Bool
-prop_seqf =
-  error "todo"
+prop_seqf l x =
+  let result = seqf (maap apply l) x
+  in len result == len l
 
 -- Exercise 10
 -- Reversing a list (x) then reversing again results in x.
 prop_rev ::
   List Int
   -> Bool
-prop_rev =
-  error "todo"
+prop_rev l =
+  (rev . rev) l == l
