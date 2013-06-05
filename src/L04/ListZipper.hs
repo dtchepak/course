@@ -33,15 +33,14 @@ data MaybeListZipper a =
 -- Relative Difficulty: 2
 -- Implement the `Fuunctor` instance for `ListZipper`.
 instance Fuunctor ListZipper where
-  fmaap =
-    error "todo"
+  fmaap f (ListZipper l x r) = ListZipper (f `fmaap` l) (f x) (f `fmaap` r)
 
 -- Exercise 2
 -- Relative Difficulty: 2
 -- Implement the `Fuunctor` instance for `MaybeListZipper`.
 instance Fuunctor MaybeListZipper where
-  fmaap =
-    error "todo"
+  fmaap _ IsNotZ = IsNotZ
+  fmaap f (IsZ z) = IsZ (fmaap f z)
 
 -- Exercise 3
 -- Relative Difficulty: 2
@@ -49,8 +48,8 @@ instance Fuunctor MaybeListZipper where
 fromList ::
   [a]
   -> MaybeListZipper a
-fromList =
-  error "todo"
+fromList [] = IsNotZ
+fromList (x:xs) = IsZ (ListZipper [] x xs)
 
 -- Exercise 3
 -- Relative Difficulty: 2
@@ -58,8 +57,8 @@ fromList =
 toMaybe ::
   MaybeListZipper a
   -> Maybe (ListZipper a)
-toMaybe =
-  error "todo"
+toMaybe IsNotZ = Nothing
+toMaybe (IsZ z) = Just z
 
 -- The `ListZipper'` type-class that will permit overloading operations.
 class Fuunctor f => ListZipper' f where
@@ -100,8 +99,9 @@ withFocus ::
   (a -> a)
   -> f a
   -> f a
-withFocus =
-  error "todo"
+withFocus f z = case toMaybeListZipper z of
+                    IsNotZ -> z
+                    IsZ (ListZipper l x r) -> fromListZipper (ListZipper l (f x) r)
 
 -- Exercise 6
 -- Relative Difficulty: 2
@@ -112,8 +112,7 @@ setFocus ::
   a
   -> f a
   -> f a
-setFocus =
-  error "todo"
+setFocus = withFocus . const
 
 -- A flipped infix alias for `setFocus`. This allows:
 --
@@ -133,8 +132,9 @@ hasLeft ::
   ListZipper' f =>
   f a
   -> Bool
-hasLeft =
-  error "todo"
+hasLeft z = case toMaybeListZipper z of
+                IsZ (ListZipper (_:_) _ _) -> True
+                _ -> False
 
 -- Exercise 8
 -- Relative Difficulty: 2
@@ -143,8 +143,9 @@ hasRight ::
   ListZipper' f =>
   f a
   -> Bool
-hasRight =
-  error "todo"
+hasRight z = case toMaybeListZipper z of
+                IsZ (ListZipper _ _ (_:_)) -> True
+                _ -> False
 
 -- Exercise 9
 -- Relative Difficulty: 3
@@ -198,8 +199,9 @@ moveLeft ::
   ListZipper' f =>
   f a
   -> MaybeListZipper a
-moveLeft =
-  error "todo"
+moveLeft z = case toMaybeListZipper z of
+                IsZ (ListZipper (l:ls) x r) -> IsZ (ListZipper ls l (x:r))
+                _ -> IsNotZ
 
 -- Exercise 14
 -- Relative Difficulty: 3
@@ -208,8 +210,9 @@ moveRight ::
   ListZipper' f =>
   f a
   -> MaybeListZipper a
-moveRight =
-  error "todo"
+moveRight z = case toMaybeListZipper z of
+                IsZ (ListZipper l x (r:rs)) -> IsZ (ListZipper (x:l) r rs)
+                _ -> IsNotZ
 
 -- Exercise 15
 -- Relative Difficulty: 3
@@ -467,8 +470,7 @@ instance Extend ListZipper where
 -- Implement the `Comonad` instance for `ListZipper`.
 -- This implementation returns the current focus of the zipper.
 instance Comonad ListZipper where
-  counit =
-    error "todo"
+  counit (ListZipper _ x _) = x
 
 -- Exercise 37
 -- Relative Difficulty: 10
