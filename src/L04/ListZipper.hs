@@ -94,6 +94,13 @@ withZ f b z = case toMaybeListZipper z of
                     IsZ l -> f l
                     _     -> b
 
+foldLZ' :: ListZipper' f =>
+    ([a] -> a -> [a] -> b)
+    -> b
+    -> f a
+    -> b
+foldLZ' = withZ . foldListZipper
+
 -- Exercise 4
 -- Relative Difficulty: 2
 -- Convert the given zipper back to a list.
@@ -101,7 +108,7 @@ toList ::
   ListZipper' f =>
   f a
   -> [a]
-toList = withZ (foldListZipper (\l x r -> reverse l ++ (x:r))) []
+toList = foldLZ' (\l x r -> reverse l ++ (x:r)) []
 
 -- Exercise 5
 -- Relative Difficulty: 3
@@ -111,9 +118,7 @@ withFocus ::
   (a -> a)
   -> f a
   -> f a
-withFocus f z = case toMaybeListZipper z of
-                    IsNotZ -> z
-                    IsZ (ListZipper l x r) -> fromListZipper (ListZipper l (f x) r)
+withFocus f z = foldLZ' (\l x r -> fromListZipper (ListZipper l (f x) r)) z z
 
 -- Exercise 6
 -- Relative Difficulty: 2
@@ -144,9 +149,7 @@ hasLeft ::
   ListZipper' f =>
   f a
   -> Bool
-hasLeft z = case toMaybeListZipper z of
-                IsZ (ListZipper (_:_) _ _) -> True
-                _ -> False
+hasLeft = foldLZ' (\l _ _ -> not (null l)) False
 
 -- Exercise 8
 -- Relative Difficulty: 2
@@ -155,9 +158,7 @@ hasRight ::
   ListZipper' f =>
   f a
   -> Bool
-hasRight z = case toMaybeListZipper z of
-                IsZ (ListZipper _ _ (_:_)) -> True
-                _ -> False
+hasRight = foldLZ' (\_ _ r -> not (null r)) False
 
 -- Exercise 9
 -- Relative Difficulty: 3
