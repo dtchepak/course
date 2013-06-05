@@ -81,6 +81,19 @@ instance ListZipper' MaybeListZipper where
   fromListZipper =
     IsZ
 
+foldListZipper :: ([a] -> a -> [a] -> b) -> ListZipper a -> b
+foldListZipper f (ListZipper l x r) = f l x r
+
+withZ :: 
+    ListZipper' f =>
+    (ListZipper a -> b)
+    -> b
+    -> f a
+    -> b
+withZ f b z = case toMaybeListZipper z of
+                    IsZ l -> f l
+                    _     -> b
+
 -- Exercise 4
 -- Relative Difficulty: 2
 -- Convert the given zipper back to a list.
@@ -88,8 +101,7 @@ toList ::
   ListZipper' f =>
   f a
   -> [a]
-toList =
-  error "todo"
+toList = withZ (foldListZipper (\l x r -> reverse l ++ (x:r))) []
 
 -- Exercise 5
 -- Relative Difficulty: 3
