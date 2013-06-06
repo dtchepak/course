@@ -212,9 +212,9 @@ moveLeft ::
   ListZipper' f =>
   f a
   -> MaybeListZipper a
-moveLeft z = case toMaybeListZipper z of
-                IsZ (ListZipper (l:ls) x r) -> IsZ (ListZipper ls l (x:r))
-                _ -> IsNotZ
+moveLeft = let move (l:ls) x r = IsZ (ListZipper ls l (x:r))
+               move _ _ _      = IsNotZ
+           in foldLZ' move IsNotZ
 
 -- Exercise 14
 -- Relative Difficulty: 3
@@ -223,9 +223,9 @@ moveRight ::
   ListZipper' f =>
   f a
   -> MaybeListZipper a
-moveRight z = case toMaybeListZipper z of
-                IsZ (ListZipper l x (r:rs)) -> IsZ (ListZipper (x:l) r rs)
-                _ -> IsNotZ
+moveRight = let move l x (r:rs) = IsZ (ListZipper (x:l) r rs)
+                move _ _ _      = IsNotZ
+            in foldLZ' move IsNotZ
 
 -- Exercise 15
 -- Relative Difficulty: 3
