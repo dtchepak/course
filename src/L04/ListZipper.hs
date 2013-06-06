@@ -169,8 +169,8 @@ findLeft ::
   (a -> Bool)
   -> f a
   -> MaybeListZipper a
-findLeft =
-  error "todo"
+findLeft p z = foldLZ' (\_ x _ -> if p x then toMaybeListZipper z 
+                                  else findLeft p (moveLeft z)) IsNotZ z
 
 -- Exercise 10
 -- Relative Difficulty: 3
@@ -181,9 +181,8 @@ findRight ::
   (a -> Bool)
   -> f a
   -> MaybeListZipper a
-findRight =
-  error "todo"
-
+findRight p z = foldLZ' (\_ x _ -> if p x then toMaybeListZipper z 
+                                  else findRight p (moveRight z)) IsNotZ z
 -- Exercise 11
 -- Relative Difficulty: 4
 -- Move the zipper left, or if there are no elements to the left, go to the far right.
@@ -234,8 +233,9 @@ swapLeft ::
   ListZipper' f =>
   f a
   -> MaybeListZipper a
-swapLeft =
-  error "todo"
+swapLeft = let swap (l:ls) x r = IsZ (ListZipper (x:ls) l r)
+               swap _ _ _      = IsNotZ
+           in foldLZ' swap IsNotZ
 
 -- Exercise 16
 -- Relative Difficulty: 3
@@ -244,8 +244,9 @@ swapRight ::
   ListZipper' f =>
   f a
   -> MaybeListZipper a
-swapRight =
-  error "todo"
+swapRight = let swap l x (r:rs) = IsZ (ListZipper l r (x:rs))
+                swap _ _ _      = IsNotZ
+            in foldLZ' swap IsNotZ
 
 -- Exercise 17
 -- Relative Difficulty: 3
@@ -254,8 +255,7 @@ dropLefts ::
   ListZipper' f =>
   f a
   -> f a
-dropLefts =
-  error "todo"
+dropLefts z = foldLZ' (\_ x r -> fromListZipper (ListZipper [] x r)) z z
 
 -- Exercise 18
 -- Relative Difficulty: 3
@@ -264,8 +264,7 @@ dropRights ::
   ListZipper' f =>
   f a
   -> f a
-dropRights =
-  error "todo"
+dropRights z = foldLZ' (\l x _ -> fromListZipper (ListZipper l x [])) z z
 
 -- Exercise 19
 -- Relative Difficulty: 4
