@@ -11,15 +11,16 @@ newtype Compose f g a =
 -- Implement a Functor instance for Compose
 instance (Functor f, Functor g) =>
     Functor (Compose f g) where
-  fmap =
-    error "todo"
+  -- :: (a -> b) -> Compose f g a -> Compose f g b
+  -- c :: f (g a)
+  --fmap f (Compose c) = Compose ((fmap . fmap) f c)
+  fmap f (Compose c) = Compose $ (fmap . fmap) f c
 
 instance (Applicative f, Applicative g) =>
     Applicative (Compose f g) where
 -- Exercise 2
 -- Implement the pure function for an Applicative instance for Compose
-  pure = 
-    error "todo"
+  pure = Compose . pure . pure
 -- Exercise 3
 -- Implement the (<*>) function for an Applicative instance for Compose
   _ <*> _ =
