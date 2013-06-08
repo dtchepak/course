@@ -35,3 +35,7 @@ errorOr (Value _) a = a
 valueValidation :: a -> Validation a
 valueValidation = Value
 
+instance Functor Validation where
+    fmap _ (Error x) = Error x
+    fmap f (Value x) = Value (f x)
+

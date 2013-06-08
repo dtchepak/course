@@ -13,15 +13,14 @@ import Control.Monad
   Parser a
   -> Input
   -> Validation a
-(<.>) =
-  error "todo"
+(P p) <.> s = fmap snd (p s)
 
 -- Exercise 1
 -- Write a parser that will parse zero or more spaces.
 spaces ::
   Parser String
 spaces =
-  error "todo"
+  list space
 
 -- Exercise 2
 -- Write a function that applies the given parser, then parses 0 or more spaces,
@@ -30,8 +29,10 @@ spaces =
 tok ::
   Parser a
   -> Parser a
-tok =
-  error "todo"
+tok p = do
+  x <- p
+  spaces
+  return x 
 
 -- Exercise 3
 -- Write a function that parses the given char followed by 0 or more spaces.
@@ -39,24 +40,21 @@ tok =
 charTok ::
   Char
   -> Parser Char
-charTok =
-  error "todo"
+charTok = tok . is
 
 -- Exercise 4
 -- Write a parser that parses a comma ',' followed by 0 or more spaces.
 -- ~~~ Use charTok ~~~
 commaTok ::
   Parser Char
-commaTok =
-  error "todo"
+commaTok = charTok ','
 
 -- Exercise 5
 -- Write a parser that parses either a double-quote or a single-quote.
 -- ~~~ Use is and (|||) ~~~
 quote ::
   Parser Char
-quote =
-  error "todo"
+quote = is '"' ||| is '\''
 
 -- Exercise 6
 -- Write a function that parses the given string (fails otherwise).
@@ -64,8 +62,7 @@ quote =
 string ::
   String
   -> Parser String
-string =
-  error "todo"
+string = mapM is
 
 -- Exercise 7
 -- Write a function that parsers the given string, followed by 0 or more spaces.
@@ -74,7 +71,7 @@ stringTok ::
   String
   -> Parser String
 stringTok =
-  error "todo"
+  tok . string
 
 -- Exercise 8
 -- Write a function that tries the given parser, otherwise succeeds by producing the given value.
@@ -83,8 +80,8 @@ option ::
   a
   -> Parser a
   -> Parser a
-option =
-  error "todo"
+option a p =
+  p ||| (return a)
 
 -- Exercise 9
 -- Write a parser that parses 1 or more digits.
@@ -92,7 +89,7 @@ option =
 digits1 ::
   Parser String
 digits1 =
-  error "todo"
+  many1 digit
 
 -- Exercise 10
 -- Write a function that parses one of the characters in the given string.
@@ -101,7 +98,7 @@ oneof ::
   String
   -> Parser Char
 oneof =
-  error "todo"
+  satisfy . flip elem
 
 -- Exercise 11
 -- Write a function that parses any character, but fails if it is in the given string.
@@ -110,7 +107,7 @@ noneof ::
   String
   -> Parser Char
 noneof =
-  error "todo"
+  satisfy . flip notElem
 
 -- Exercise 12
 -- Write a function that applies the first parser, runs the third parser keeping the result,
@@ -121,8 +118,12 @@ between ::
   -> Parser c
   -> Parser a
   -> Parser a
-between =
-  error "todo"
+between l r c = do
+    l
+    result <- c
+    r
+    return result
+  
 
 -- Exercise 13
 -- Write a function that applies the given parser in between the two given characters.
@@ -132,8 +133,8 @@ betweenCharTok ::
   -> Char
   -> Parser a
   -> Parser a
-betweenCharTok =
-  error "todo"
+betweenCharTok l r =
+  between (charTok l) (charTok r)
 
 -- Exercise 14
 -- Write a function that parses the character 'u' followed by 4 hex digits and return the character value.
@@ -141,7 +142,13 @@ betweenCharTok =
 hex ::
   Parser Char
 hex =
-  error "todo"
+  let hexDigits :: Parser String
+      hexDigits = is 'u' >> replicateM 4 (satisfy isHexDigit)
+      hexToInt :: String -> Int
+      hexToInt s = case readHex s of
+                    (n,_):_ -> n
+                    _       -> 0
+  in fmap (chr . hexToInt) hexDigits
 
 -- Exercise 15
 -- Write a function that produces a non-empty list of values coming off the given parser (which must succeed at least once),
@@ -151,8 +158,10 @@ sepby1 ::
   Parser a
   -> Parser s
   -> Parser [a]
-sepby1 =
-  error "todo"
+sepby1 p s = do
+    one <- p
+    rest <- list (s >> p)
+    return (one:rest)
 
 -- Exercise 16
 -- Write a function that produces a list of values coming off the given parser,
@@ -162,15 +171,16 @@ sepby ::
   Parser a
   -> Parser s
   -> Parser [a]
-sepby =
-  error "todo"
+sepby p s = sepby1 p s ||| return []
+
 
 -- Exercise 17
 -- Write a parser that asserts that there is no remaining input.
 eof ::
   Parser ()
-eof =
-  error "todo"
+eof = P $ \s -> case s of
+                    [] -> Value ([], ())
+                    _  -> Error "eof: input not empty"
 
 -- Exercise 18
 -- Write a parser that produces a characer that satisfies all of the given predicates.
@@ -178,8 +188,8 @@ eof =
 satisfyAll ::
   [Char -> Bool]
   -> Parser Char
-satisfyAll =
-  error "todo"
+satisfyAll ps =
+  satisfy (and . sequence ps)
 
 -- Exercise 19
 -- Write a parser that produces a characer that satisfies any of the given predicates.
@@ -187,8 +197,8 @@ satisfyAll =
 satisfyAny ::
   [Char -> Bool]
   -> Parser Char
-satisfyAny =
-  error "todo"
+satisfyAny ps =
+  satisfy (or . sequence ps)
 
 -- Exercise 20
 -- Write a parser that parses between the two given characters, separated by a comma character ','.
@@ -198,5 +208,5 @@ betweenSepbyComma ::
   -> Char
   -> Parser a
   -> Parser [a]
-betweenSepbyComma =
-  error "todo"
+betweenSepbyComma l r =
+  betweenCharTok l r . flip sepby (charTok ',')
