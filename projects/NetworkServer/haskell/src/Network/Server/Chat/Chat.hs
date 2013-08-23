@@ -3,8 +3,10 @@ module Network.Server.Chat.Chat where
 import Network.Server.Common.Env
 import Network.Server.Common.Line
 import Network.Server.Chat.Loop
+import Data.IORef (atomicModifyIORef)
 import Data.Maybe(fromMaybe)
 import Data.Foldable(msum)
+import Control.Arrow ((&&&))
 import Control.Applicative((<$), (<$>))
 import Control.Monad.Trans(MonadIO(..))
 
@@ -21,7 +23,7 @@ incr ::
   Chat Integer
 incr =
   do e <- readEnvval
-     liftIO $ atomicModifyIORef_ e (+1)
+     liftIO $ atomicModifyIORef e (succ &&& succ)
 
 chat ::
   IO a
@@ -50,9 +52,14 @@ chatCommand z =
                              , Incr <$ trimPrefixThen "INCR" z
                              ]
 
+serverMsg :: String -> String
+serverMsg = (++) "> "
+
 process ::
   ChatCommand
   -> Chat ()
-process (Chat s) = allClientsButThis ! "> " ++ s
-process (Unknown s) = pPutStrLn $ "Don't know how to " ++ s
-process Incr = incr >> allClients ! "> counter is at ?"
+process (Chat s) = allClientsButThis ! serverMsg s
+process (Unknown s) = pPutStrLn . serverMsg $ "Don't know how to " ++ s
+process Incr = 
+    let msg n = serverMsg $ "counter is at " ++ show n
+    in incr >>= \n -> allClients ! msg n
