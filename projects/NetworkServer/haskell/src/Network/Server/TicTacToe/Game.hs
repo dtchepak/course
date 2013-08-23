@@ -16,11 +16,16 @@ import Data.Set(Set)
 import Control.Applicative((<$), (<$>))
 import System.IO(hGetLine, hPutStrLn)
 
+data Unfinished =
+    ZeroMoves
+    | OneOrMoreMoves Unfinished
+    deriving (Eq, Show)
+
 type FinishedGames =
   [FinishedBoard]
 
 type Game a =
-  IORefLoop Board (Board, FinishedGames) a
+  IORefLoop Unfinished (Unfinished, FinishedGames) a
 
 data Command =
   Move Position
@@ -171,29 +176,29 @@ sPosition s =
       toUppers = map toUpper
   in fmap snd . find (\(t, _) -> elem (toUppers s) (toUppers <$> t)) $ table
 
-currentBoard ::
-  Game Board
-currentBoard =
+currentUnfinished ::
+  Game Unfinished
+currentUnfinished =
   initLoop $ \env ->
     readIORef (envvalL `getL` env)
 
-withCurrentBoard ::
-  (Board -> (Board, a))
+withCurrentUnfinished ::
+  (Unfinished -> (Unfinished, a))
   -> Game a
-withCurrentBoard f =
+withCurrentUnfinished f =
   initLoop $ \env ->
     atomicModifyIORef (envvalL `getL` env) f
 
-lastBoard ::
-  Game Board
-lastBoard =
+lastUnfinished ::
+  Game Unfinished
+lastUnfinished =
   Loop $ \_ (s, t) ->
     return (s, (s, t))
 
-putBoard ::
-  Board
+putUnfinished ::
+  Unfinished
   -> Game ()
-putBoard s =
+putUnfinished s =
   Loop $ \_ (_, t) ->
       return ((), (s, t))
 
@@ -227,17 +232,22 @@ allClients =
 process ::
   Command
   -> Game ()
-process =
-  error "todo"
+process (Move p)    = error "todo"
+process (Current)   = error "todo"
+process (Finished)  = error "todo"
+process (Chat s)    = error "todo"
+process (Turn)      = error "todo"
+process (At p)      = error "todo"
+process (Unknown s) = error "todo"
 
 game ::
   Game x -- client accepted (post)
   -> (String -> Game w) -- read line from client
   -> IO a
-game =
+game q f =
   error "todo"
 
 play ::
   IO a
 play =
-  game (currentBoard >>= pPutStrLn . show) (process . command)
+  game (currentUnfinished >>= pPutStrLn . show) (process . command)
