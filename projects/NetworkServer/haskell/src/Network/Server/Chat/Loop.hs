@@ -160,11 +160,14 @@ allClients ::
 allClients =
   Loop $ \env -> readIORef (clientsL `getL` env)
 
+thisThread :: Applicative f => Loop v f Ref
+thisThread = 
+    Loop $ \env -> pure $ acceptL .@ refL `getL` env
+
 allClientsButThis ::
   IOLoop v (Set Ref)
-allClientsButThis =
-  Loop $ \env ->
-    fmap (S.delete ((acceptL .@ refL) `getL` env)) (readIORef (clientsL `getL` env))
+allClientsButThis = 
+    thisThread >>= \accept -> fmap (S.delete accept) allClients
 
 -- Control.Monad.CatchIO
 ecatch ::
