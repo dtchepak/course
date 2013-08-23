@@ -28,6 +28,9 @@ data Board =
   Board (Map Position Player) [(Position, Player)]
   deriving Eq
 
+playerAt :: Position -> Board -> Maybe Player
+playerAt p (Board m _)  = M.lookup p m
+
 data FinishedBoard =
   FinishedBoard (Maybe Player) Board
   deriving Eq

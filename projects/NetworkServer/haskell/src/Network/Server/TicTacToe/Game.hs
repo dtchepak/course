@@ -8,6 +8,7 @@ import Network.Server.Common.Line
 import Network.Server.Common.Ref
 import Network.Server.TicTacToe.Loop
 import Data.Char(isSpace, toLower, toUpper)
+import Data.List(intercalate)
 import Data.Function(on)
 import Data.IORef(readIORef, atomicModifyIORef)
 import Data.Maybe(fromMaybe)
@@ -18,8 +19,12 @@ import System.IO(hGetLine, hPutStrLn)
 
 data Unfinished =
     ZeroMoves
-    | OneOrMoreMoves Unfinished
+    | OneOrMoreMoves Board
     deriving (Eq, Show)
+
+foldUnfinished :: a -> (Board -> a) -> Unfinished -> a
+foldUnfinished a _ ZeroMoves = a
+foldUnfinished _ f (OneOrMoreMoves b) = f b
 
 type FinishedGames =
   [FinishedBoard]
@@ -189,6 +194,10 @@ withCurrentUnfinished f =
   initLoop $ \env ->
     atomicModifyIORef (envvalL `getL` env) f
 
+withCurrentBoard :: a -> (Board -> a) -> Game a
+withCurrentBoard a f =
+    foldUnfinished a f <$> currentUnfinished
+
 lastUnfinished ::
   Game Unfinished
 lastUnfinished =
@@ -233,19 +242,34 @@ process ::
   Command
   -> Game ()
 process (Move p)    = error "todo"
-process (Current)   = error "todo"
-process (Finished)  = error "todo"
-process (Chat s)    = error "todo"
-process (Turn)      = error "todo"
-process (At p)      = error "todo"
-process (Unknown s) = error "todo"
+
+process (Current)   = 
+    withCurrentBoard "> empty" show >>= ePutStrLn >> return ()
+
+process (Finished)  = (fmap . fmap) show finishedGames 
+                        >>= ePutStrLn . intercalate "\n" 
+                        >> return ()
+
+process (Chat s)    = allClientsButThis ! ("> " ++ s)
+
+process (Turn)      = do
+    p <- withCurrentBoard Cross whoseTurn
+    ePutStrLn $ show p
+    return ()
+
+process (At p)      = do
+    maybeP <- withCurrentBoard Nothing (playerAt p)
+    ePutStrLn $ maybe "> empty" (\x -> "> " ++ show x) maybeP
+    return ()
+
+process (Unknown s) = ePutStrLn $ "> Unknown command: " ++ s
 
 game ::
   Game x -- client accepted (post)
   -> (String -> Game w) -- read line from client
   -> IO a
-game q f =
-  error "todo"
+game g f = 
+    iorefLoop ZeroMoves (ZeroMoves, []) g f
 
 play ::
   IO a
