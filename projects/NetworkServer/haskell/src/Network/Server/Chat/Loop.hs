@@ -79,10 +79,11 @@ perClient ::
   -> (String -> IOLoop v a) -- read line from client
   -> IOLoop v ()
 perClient q f =
-    let handleEx :: IOException -> IOLoop v ()
+    let step = etry lGetLine >>= either handleEx handleS
+        handleEx :: IOException -> IOLoop v ()
         handleEx = const (pPutStrLn "something went wrong")
-        handleS s = f s >> perClient q f
-    in q >> etry lGetLine >>= either handleEx handleS
+        handleS s = f s >> step
+    in q >> step
 
 loop ::
   IO w -- server initialise
