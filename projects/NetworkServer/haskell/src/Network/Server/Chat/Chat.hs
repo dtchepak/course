@@ -53,5 +53,5 @@ chatCommand z =
 process ::
   ChatCommand
   -> Chat ()
-process =
-  error "todo"
+process (Chat s) = pPutStrLn s
+process _ = pPutStrLn "I can't do this yet"

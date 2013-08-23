@@ -7,7 +7,7 @@ import Data.IORef(IORef, newIORef, readIORef)
 import Data.Foldable(Foldable, mapM_)
 import Control.Applicative(Applicative, pure)
 import Control.Concurrent(forkIO)
-import Control.Exception(finally, try, catch, Exception)
+import Control.Exception(finally, try, catch, Exception, IOException)
 import Control.Monad(forever)
 import Control.Monad.Trans(MonadTrans(..), MonadIO(..))
 
@@ -78,8 +78,11 @@ perClient ::
   IOLoop v x -- client accepted (post)
   -> (String -> IOLoop v a) -- read line from client
   -> IOLoop v ()
-perClient q f =
-  error "todo"
+perClient q f =  -- error "todo"
+    let handleEx :: IOException -> IOLoop v ()
+        handleEx = const (pPutStrLn "something went wrong")
+        handleS s = f s >> perClient q f
+    in q >> etry lGetLine >>= either handleEx handleS
 
 loop ::
   IO w -- server initialise
