@@ -1,6 +1,6 @@
 module Network.Server.Chat.Loop where
 
-import Prelude hiding (mapM_, catch)
+import Prelude hiding (mapM_)
 import Network(PortID(..), sClose, withSocketsDo, listenOn)
 import System.IO(BufferMode(..))
 import Data.IORef(IORef, newIORef, readIORef)
@@ -78,7 +78,7 @@ perClient ::
   IOLoop v x -- client accepted (post)
   -> (String -> IOLoop v a) -- read line from client
   -> IOLoop v ()
-perClient q f =  -- error "todo"
+perClient q f =
     let handleEx :: IOException -> IOLoop v ()
         handleEx = const (pPutStrLn "something went wrong")
         handleS s = f s >> perClient q f
@@ -153,6 +153,11 @@ readIOEnvval ::
 readIOEnvval =
   Loop $ \env ->
     readIORef (envvalL `getL` env)
+
+allClients ::
+  IOLoop v (Set Ref)
+allClients =
+  Loop $ \env -> readIORef (clientsL `getL` env)
 
 allClientsButThis ::
   IOLoop v (Set Ref)

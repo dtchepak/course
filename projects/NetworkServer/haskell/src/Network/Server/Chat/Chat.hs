@@ -53,5 +53,6 @@ chatCommand z =
 process ::
   ChatCommand
   -> Chat ()
-process (Chat s) = pPutStrLn s
-process _ = pPutStrLn "I can't do this yet"
+process (Chat s) = allClientsButThis ! "> " ++ s
+process (Unknown s) = pPutStrLn $ "Don't know how to " ++ s
+process Incr = incr >> allClients ! "> counter is at ?"
