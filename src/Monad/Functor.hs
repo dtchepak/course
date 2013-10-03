@@ -2,11 +2,11 @@
 
 module Monad.Functor where
 
-import Core(IO, Maybe(..), error)
+import Core(IO, Maybe(..), (.))
 import qualified Prelude as P(fmap)
 import Intro.Id(Id(..))
 import Intro.Optional(Optional(..))
-import Structure.List(List(..))
+import Structure.List(List(..), map)
 
 class Functor f where
   fmap :: (a -> b) -> f a -> f b
@@ -23,8 +23,7 @@ class Functor f where
 -- >>> fmap (+1) (Id 2)
 -- Id 3
 instance Functor Id where
-  fmap =
-    error "todo"
+  fmap f (Id x) = Id (f x)
 
 -- Exercise 2
 -- Relative Difficulty: 2
@@ -37,8 +36,7 @@ instance Functor Id where
 -- >>> fmap (+1) (1 :. 2 :. 3 :. Nil)
 -- [2,3,4]
 instance Functor List where
-  fmap =
-    error "todo"
+  fmap = map
 
 -- Exercise 3
 -- Relative Difficulty: 2
@@ -51,8 +49,8 @@ instance Functor List where
 -- >>> fmap (+1) (Full 2)
 -- Full 3
 instance Functor Optional where
-  fmap =
-    error "todo"
+  fmap f (Full x) = Full (f x)
+  fmap _ Empty = Empty
 
 -- Exercise 4
 -- Relative Difficulty: 3
@@ -63,7 +61,7 @@ instance Functor Optional where
 -- 17
 instance Functor ((->) t) where
   fmap =
-    error "todo"
+    (.)
 
 -----------------------
 -- SUPPORT LIBRARIES --
