@@ -11,8 +11,8 @@
 
 module Structure.List where
 
-import Core(Num(..), Eq(..), Show(..), IsString(..), Int, Char, Bool(..), (.), seq, foldr, error)
-import Intro.Optional(Optional(..))
+import Core(Num(..), Eq(..), Show(..), IsString(..), Int, Char, Bool(..), (.), seq, foldr, const, succ, id, flip)
+import Intro.Optional(Optional(..), twiceOptional)
 
 -- $setup
 -- >>> import Test.QuickCheck
@@ -65,7 +65,7 @@ headOr ::
   -> List a
   -> a
 headOr =
-  error "todo"
+  foldRight const
 
 -- | The product of the elements of a list.
 --
@@ -100,7 +100,7 @@ sum ::
   List Int
   -> Int
 sum =
-  error "todo"
+  foldRight (+) 0
 
 -- Exercise 3
 -- Relative Difficulty: 2
@@ -119,7 +119,7 @@ len ::
   List a
   -> Int
 len =
-  error "todo"
+  foldLeft (const . succ) 0
 
 -- Exercise 4
 -- Relative Difficulty: 5
@@ -138,8 +138,8 @@ map ::
   (a -> b)
   -> List a
   -> List b
-map =
-  error "todo"
+map f =
+  foldRight ((:.) . f) Nil
 
 -- Exercise 5
 -- Relative Difficulty: 5
@@ -160,8 +160,8 @@ filter ::
   (a -> Bool)
   -> List a
   -> List a
-filter =
-  error "todo"
+filter p =
+  foldRight (\x -> if p x then (x:.) else id) Nil
 
 -- Exercise 6
 -- Relative Difficulty: 5
@@ -183,7 +183,7 @@ append ::
   -> List a
   -> List a
 append =
-  error "todo"
+  flip (foldRight (:.))
 
 -- Exercise 7
 -- Relative Difficulty: 5
@@ -202,7 +202,7 @@ flatten ::
   List (List a)
   -> List a
 flatten =
-  error "todo"
+  foldRight append Nil
 
 -- Exercise 8
 -- Relative Difficulty: 7
@@ -221,8 +221,8 @@ flatMap ::
   (a -> List b)
   -> List a
   -> List b
-flatMap =
-  error "todo"
+flatMap f =
+  flatten . map f
 
 -- Exercise 9
 -- Relative Difficulty: 8
@@ -254,7 +254,7 @@ seqOptional ::
   List (Optional a)
   -> Optional (List a)
 seqOptional =
-  error "todo"
+  foldRight (twiceOptional (:.)) (Full Nil)
 
 -- Exercise 10
 --
@@ -275,8 +275,8 @@ find ::
   (a -> Bool)
   -> List a
   -> Optional a
-find =
-  error "todo"
+find p =
+  foldRight (\x -> if p x then const (Full x) else id) Empty
 
 -- Exercise 11
 -- Relative Difficulty: 10
@@ -295,7 +295,7 @@ rev ::
   List a
   -> List a
 rev =
-  error "todo"
+  foldLeft (flip (:.)) Nil
 
 -- END Exercises
 
