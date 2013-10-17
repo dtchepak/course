@@ -2,11 +2,11 @@
 
 module Monad.Monad where
 
-import Core(IO, Maybe(..), Bool(..), Int, (=<<), error)
-import qualified Prelude as P(return, (=<<))
+import Core(IO, Maybe(..), Bool(..), Int, (=<<), (.), const, id, (<=))
+import qualified Prelude as P(return, (=<<), pred)
 import Intro.Id(Id(..))
 import Intro.Optional(Optional(..))
-import Structure.List(List(..))
+import Structure.List(List(..), flatMap, foldRight)
 
 -- $setup
 -- >>> import Core(Eq(..), Num(..), Ord(..), even, (.))
@@ -38,8 +38,7 @@ class Monad m where
     (a -> b)
     -> m a
     -> m b
-  fmap' =
-    error "todo"
+  fmap' f = bind (return . f)
 
 -- Exercise 7
 -- Relative Difficulty: 1
@@ -51,10 +50,10 @@ class Monad m where
 --
 -- prop> return x == Id x
 instance Monad Id where
-  bind =
-    error "todo"
+  bind f (Id x) =
+    f x
   return =
-    error "todo"
+    Id
 
 -- Exercise 8
 -- Relative Difficulty: 2
@@ -67,9 +66,9 @@ instance Monad Id where
 -- prop> return x == x :. Nil
 instance Monad List where
   bind =
-    error "todo"
+    flatMap
   return =
-    error "todo"
+    (:.Nil)
 
 -- Exercise 9
 -- Relative Difficulty: 2
@@ -81,10 +80,10 @@ instance Monad List where
 --
 -- prop> return x == Full x
 instance Monad Optional where
-  bind =
-    error "todo"
+  bind f (Full x) = f x
+  bind _ Empty = Empty
   return =
-    error "todo"
+    Full
 
 -- Exercise 10
 -- Relative Difficulty: 3
@@ -96,10 +95,11 @@ instance Monad Optional where
 --
 -- prop> return x y == x
 instance Monad ((->) t) where
-  bind =
-    error "todo"
+  -- bind :: (a -> t -> b) -> (t -> a) -> t -> b
+  --bind f g = \t -> f (g t) t
+  bind f g t = f (g t) t
   return =
-    error "todo"
+    const
 
 -- Exercise 11
 -- Relative Difficulty: 2
@@ -122,7 +122,7 @@ flatten' ::
   m (m a)
   -> m a
 flatten' =
-  error "todo"
+  bind id
 
 -- Exercise 12
 -- Relative Difficulty: 10
@@ -154,8 +154,10 @@ apply ::
   m (a -> b)
   -> m a
   -> m b
-apply =
-  error "todo"
+apply mf ma =
+  -- f :: a -> b :: (->) a b
+  -- a -> m a -> m b
+  bind (`fmap'` ma) mf
 
 -- Exercise 13
 -- Relative Difficulty: 6
@@ -186,8 +188,8 @@ lift2 ::
   -> m a
   -> m b
   -> m c
-lift2 =
-  error "todo"
+lift2 f ma mb =
+  fmap' f ma `apply` mb
 
 -- Exercise 14
 -- Relative Difficulty: 6
@@ -222,8 +224,8 @@ lift3 ::
   -> m b
   -> m c
   -> m d
-lift3 =
-  error "todo"
+lift3 f ma mb mc =
+  lift2 f ma mb `apply` mc
 
 -- Exercise 15
 -- Relative Difficulty: 6
@@ -259,8 +261,8 @@ lift4 ::
   -> m c
   -> m d
   -> m e
-lift4 =
-  error "todo"
+lift4 f ma mb mc md =
+  lift3 f ma mb mc `apply` md
 
 -- Exercise 16
 -- Relative Difficulty: 3
@@ -286,7 +288,7 @@ seequence ::
   List (m a)
   -> m (List a)
 seequence =
-  error "todo"
+  foldRight (lift2 (:.)) (return Nil)
 
 -- Exercise 17
 -- Relative Difficulty: 3
@@ -312,8 +314,8 @@ traaverse ::
   (a -> m b)
   -> List a
   -> m (List b)
-traaverse =
-  error "todo"
+traaverse f =
+  seequence . fmap' f
 
 -- Exercise 18
 -- Relative Difficulty: 4
@@ -336,8 +338,12 @@ reeplicate ::
   Int
   -> m a
   -> m (List a)
-reeplicate =
-  error "todo"
+reeplicate i =
+    seequence . replicate i
+
+replicate :: Int -> a -> List a
+replicate i a =
+    if i <= 0 then Nil else a :. replicate (P.pred i) a
 
 -- Exercise 19
 -- Relative Difficulty: 9
@@ -363,8 +369,11 @@ filtering ::
   (a -> m Bool)
   -> List a
   -> m (List a)
-filtering =
-  error "todo"
+filtering p =
+  let (>>:) = fmap' . (:.)
+  in foldRight 
+        (\a acc -> bind (\b -> if b then a >>: acc else acc) (p a)) 
+        (return Nil)
 
 -----------------------
 -- SUPPORT LIBRARIES --
