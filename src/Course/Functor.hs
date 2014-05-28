@@ -28,8 +28,7 @@ infixl 4 <$>
 -- >>> (+1) <$> Id 2
 -- Id 3
 instance Functor Id where
-  (<$>) =
-    error "todo"
+  (<$>) = mapId
 
 -- | Maps a function on the List functor.
 --
@@ -40,7 +39,7 @@ instance Functor Id where
 -- [2,3,4]
 instance Functor List where
   (<$>) =
-    error "todo"
+    map
 
 -- | Maps a function on the Optional functor.
 --
@@ -51,15 +50,15 @@ instance Functor List where
 -- Full 3
 instance Functor Optional where
   (<$>) =
-    error "todo"
+    mapOptional
 
 -- | Maps a function on the reader ((->) t) functor.
 --
 -- >>> ((+1) <$> (*2)) 8
 -- 17
 instance Functor ((->) t) where
-  (<$>) =
-    error "todo"
+  f <$> g =
+    f . g
 
 -- | Anonymous map. Maps a constant value on a functor.
 --
@@ -75,7 +74,7 @@ instance Functor ((->) t) where
   -> f b
   -> f a
 (<$) =
-  error "todo"
+  (<$>) . const
 
 -- | Anonymous map producing unit value.
 --
@@ -94,8 +93,7 @@ void ::
   Functor f =>
   f a
   -> f ()
-void =
-  error "todo"
+void = (<$) ()
 
 -----------------------
 -- SUPPORT LIBRARIES --
