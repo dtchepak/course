@@ -313,7 +313,7 @@ notReverse ::
   List a
   -> List a
 notReverse =
-  error "not possible"
+  reverse -- not possible
 
 hlist ::
   List a
