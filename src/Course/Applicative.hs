@@ -17,6 +17,7 @@ import Course.Id
 import Course.List
 import Course.Optional
 import qualified Prelude as P
+import qualified Course.Functor as F
 
 class Apply f => Applicative f where
   pure ::
@@ -37,36 +38,36 @@ class Apply f => Applicative f where
   (a -> b)
   -> f a
   -> f b
-(<$>) =
-  error "todo"
+f <$> x =
+  pure f <*> x
 
 -- | Insert into Id.
 --
 -- prop> pure x == Id x
 instance Applicative Id where
   pure =
-    error "todo"
+    Id
 
 -- | Insert into a List.
 --
 -- prop> pure x == x :. Nil
 instance Applicative List where
   pure =
-    error "todo"
+    (:. Nil)
 
 -- | Insert into an Optional.
 --
 -- prop> pure x == Full x
 instance Applicative Optional where
   pure =
-    error "todo"
+    Full
 
 -- | Insert into a constant function.
 --
 -- prop> pure x y == x
 instance Applicative ((->) t) where
   pure =
-    error "todo"
+    const
 
 -- | Sequences a list of structures to a structure of list.
 --
@@ -89,7 +90,7 @@ sequence ::
   List (f a)
   -> f (List a)
 sequence =
-  error "todo"
+  foldRight (lift2 (:.)) (pure Nil)
 
 -- | Replicate an effect a given number of times.
 --
@@ -112,8 +113,8 @@ replicateA ::
   Int
   -> f a
   -> f (List a)
-replicateA =
-  error "todo"
+replicateA n =
+  sequence . replicate n
 
 -- | Filter a list with a predicate that produces an effect.
 --
@@ -136,8 +137,27 @@ filtering ::
   (a -> f Bool)
   -> List a
   -> f (List a)
-filtering =
-  error "todo"
+filtering p =
+    foldRight (\x -> lift2 (\b -> if b then (x:.) else id) (p x)) (pure Nil)
+
+
+
+-- Misc
+newtype ReaderT t m a = ReaderT { runReaderT :: t -> m a }
+
+askT :: Applicative m => ReaderT r m r
+askT = ReaderT $ pure . id
+
+instance F.Functor m => F.Functor (ReaderT t m) where
+    f <$> ReaderT x =
+        let fmap = (F.<$>)
+        in ReaderT $ \t -> f `fmap` x t
+instance Apply m => Apply (ReaderT t m) where
+    ReaderT f <*> ReaderT x =
+        ReaderT $ \t -> f t <*> x t
+instance Applicative m => Applicative (ReaderT t m) where
+    pure = ReaderT . const . pure
+
 
 -----------------------
 -- SUPPORT LIBRARIES --
