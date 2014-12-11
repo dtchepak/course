@@ -279,7 +279,7 @@ lengthGT4 ::
   List a
   -> Bool
 lengthGT4 =
-  error "todo"
+  headOr False . drop 4 . map (const True)
 
 -- | Reverse a list.
 --
@@ -296,7 +296,7 @@ reverse ::
   List a
   -> List a
 reverse =
-  error "todo"
+  foldLeft (flip (:.)) Nil
 
 -- | Produce an infinite `List` that seeds with the given value at its head,
 -- then runs the given function for subsequent elements
@@ -310,8 +310,8 @@ produce ::
   (a -> a)
   -> a
   -> List a
-produce =
-  error "todo"
+produce f s =
+  s :. produce f (f s)
 
 -- | Do anything other than reverse a list.
 -- Is it even possible?
@@ -326,7 +326,7 @@ notReverse ::
   List a
   -> List a
 notReverse =
-  error "todo"
+  reverse -- nup
 
 largeList ::
   List Int
