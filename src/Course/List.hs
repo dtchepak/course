@@ -73,7 +73,7 @@ headOr ::
   -> List a
   -> a
 headOr =
-  error "todo"
+  foldRight const
 
 -- | The product of the elements of a list.
 --
@@ -86,7 +86,7 @@ product ::
   List Int
   -> Int
 product =
-  error "todo"
+  foldLeft (*) 1
 
 -- | Sum the elements of the list.
 --
@@ -101,7 +101,7 @@ sum ::
   List Int
   -> Int
 sum =
-  error "todo"
+  foldLeft (+) 0
 
 -- | Return the length of the list.
 --
@@ -113,7 +113,7 @@ length ::
   List a
   -> Int
 length =
-  error "todo"
+  foldLeft (const . succ) 0
 
 -- | Map the given function on each element of the list.
 --
@@ -127,8 +127,8 @@ map ::
   (a -> b)
   -> List a
   -> List b
-map =
-  error "todo"
+map f =
+  foldRight ((:.) . f) Nil
 
 -- | Return elements satisfying the given predicate.
 --
@@ -144,8 +144,8 @@ filter ::
   (a -> Bool)
   -> List a
   -> List a
-filter =
-  error "todo"
+filter p =
+  foldRight (\x -> if p x then (x:.) else id) Nil
 
 -- | Append two lists to a new list.
 --
@@ -164,7 +164,7 @@ filter =
   -> List a
   -> List a
 (++) =
-  error "todo"
+  flip $ foldRight (:.)
 
 infixr 5 ++
 
@@ -182,7 +182,7 @@ flatten ::
   List (List a)
   -> List a
 flatten =
-  error "todo"
+  foldRight (++) Nil
 
 -- | Map a function then flatten to a list.
 --
@@ -198,8 +198,8 @@ flatMap ::
   (a -> List b)
   -> List a
   -> List b
-flatMap =
-  error "todo"
+flatMap f =
+  flatten . map f
 
 -- | Flatten a list of lists to a list (again).
 -- HOWEVER, this time use the /flatMap/ function that you just wrote.
@@ -209,7 +209,7 @@ flattenAgain ::
   List (List a)
   -> List a
 flattenAgain =
-  error "todo"
+  flatMap id
 
 -- | Convert a list of optional values to an optional list of values.
 --
@@ -237,7 +237,7 @@ seqOptional ::
   List (Optional a)
   -> Optional (List a)
 seqOptional =
-  error "todo"
+  foldRight (twiceOptional (:.)) (Full Nil)
 
 -- | Find the first element in the list matching the predicate.
 --
@@ -259,8 +259,8 @@ find ::
   (a -> Bool)
   -> List a
   -> Optional a
-find =
-  error "todo"
+find p =
+  headOr Empty . map Full . filter p
 
 -- | Determine if the length of the given list is greater than 4.
 --
