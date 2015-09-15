@@ -288,8 +288,8 @@ lengthGT4 ::
   List a
   -> Bool
 lengthGT4 =
-  (?? False) . head . map (const True) . drop 4
-  --or, you know, just use pattern matching like a normal person...
+  not . isEmpty . drop 4
+  -- courtesy of @scottsedgwick
 
 -- | Reverse a list.
 --
