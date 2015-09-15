@@ -2,6 +2,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE RebindableSyntax #-}
+{-# LANGUAGE TupleSections #-}
 
 module Course.State where
 
@@ -41,8 +42,9 @@ instance Functor (State s) where
     (a -> b)
     -> State s a
     -> State s b
-  (<$>) =
-      error "todo: Course.State#(<$>)"
+  f <$> State sa =
+      State $ \s -> let (a, s') = sa s
+                    in (f a, s')
 
 -- | Implement the `Apply` instance for `State s`.
 -- >>> runState (pure (+1) <*> pure 0) 0
@@ -56,8 +58,10 @@ instance Apply (State s) where
     State s (a -> b)
     -> State s a
     -> State s b 
-  (<*>) =
-    error "todo: Course.State (<*>)#instance (State s)"
+  State f <*> State sa =
+    State $ \s -> let (f', s') = f s
+                      (a, s'') = sa s'
+                  in (f' a, s'')
 
 -- | Implement the `Applicative` instance for `State s`.
 -- >>> runState (pure 2) 0
@@ -67,7 +71,8 @@ instance Applicative (State s) where
     a
     -> State s a
   pure =
-    error "todo: Course.State pure#instance (State s)"
+    State . (,)
+
 
 -- | Implement the `Bind` instance for `State s`.
 -- >>> runState ((const $ put 2) =<< put 1) 0
@@ -77,8 +82,9 @@ instance Bind (State s) where
     (a -> State s b)
     -> State s a
     -> State s b
-  (=<<) =
-    error "todo: Course.State (=<<)#instance (State s)"
+  f =<< State sa =
+    State $ \s -> let (a, s') = sa s
+                  in f a `runState` s'
 
 instance Monad (State s) where
 
@@ -89,8 +95,8 @@ exec ::
   State s a
   -> s
   -> s
-exec =
-  error "todo: Course.State#exec"
+exec sa =
+  snd . runState sa
 
 -- | Run the `State` seeded with `s` and retrieve the resulting value.
 --
@@ -99,8 +105,8 @@ eval ::
   State s a
   -> s
   -> a
-eval =
-  error "todo: Course.State#eval"
+eval sa =
+  fst . runState sa
 
 -- | A `State` where the state also distributes into the produced value.
 --
@@ -109,7 +115,7 @@ eval =
 get ::
   State s s
 get =
-  error "todo: Course.State#get"
+  State $ \s -> (s,s)
 
 -- | A `State` where the resulting state is seeded with the given value.
 --
@@ -118,8 +124,8 @@ get =
 put ::
   s
   -> State s ()
-put =
-  error "todo: Course.State#put"
+put s =
+  State $ const ((), s)
 
 -- | Find the first element in a `List` that satisfies a given predicate.
 -- It is possible that no element is found, hence an `Optional` result.
@@ -130,18 +136,36 @@ put =
 --   find ::  (a ->   Bool) -> List a ->    Optional a
 --   findM :: (a -> f Bool) -> List a -> f (Optional a)
 --
+-- >>> let p x = (\a -> putStrLn (pure a) >> pure (a==x)) in findM (p 'c') $ listh ['a'..'d']
+-- a
+-- b
+-- c
+-- Full 'c'
+--
+-- >>> let p x = (\a -> putStrLn (pure a) >> pure (a==x)) in findM (p 'z') $ listh ['a'..'d']
+-- a
+-- b
+-- c
+-- d
+-- Empty
+--
 -- >>> let p x = (\s -> (const $ pure (x == 'c')) =<< put (1+s)) =<< get in runState (findM p $ listh ['a'..'h']) 0
 -- (Full 'c',3)
 --
--- >>> let p x = (\s -> (const $ pure (x == 'i')) =<< put (1+s)) =<< get in runState (findM p $ listh ['a'..'h']) 8
+-- >>> let p x = (\s -> (const $ pure (x == 'i')) =<< put (1+s)) =<< get in runState (findM p $ listh ['a'..'h']) 0
 -- (Empty,8)
 findM ::
   Monad f =>
   (a -> f Bool)
   -> List a
   -> f (Optional a)
-findM =
-  error "todo: Course.State#findM"
+findM p =
+  foldRight (\x acc -> p x >>= \b -> if b then pure (Full x) else acc) (pure Empty)
+  -- <*> runs all effects from LHS and RHS, which will mean our effect will run for
+  -- every element in the list. This is not what we want in this case.
+  -- For >>= gives more control over this - the effect run will depend on the (a -> m b)
+  -- argument.
+  -- foldRight (\x acc -> ifThenElse <$> p x <*> pure (Full x) <*> acc) (pure Empty)
 
 -- | Find the first element in a `List` that repeats.
 -- It is possible that no element repeats, hence an `Optional` result.
