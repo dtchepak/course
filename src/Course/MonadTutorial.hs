@@ -452,4 +452,11 @@ class BindAndPure f where
   pure ::
     a
     -> f a
-    
+
+sequence :: BindAndPure f => [f a] -> f [a]
+sequence =
+  foldr (\a as ->
+    bind (\a' ->
+    bind (\as' ->
+    pure (a' : as')) as) a)
+  (pure [])
