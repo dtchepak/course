@@ -51,7 +51,9 @@ And b.txt, containing:
 And c.txt, containing:
   the contents of c
 
-$ runhaskell FileIO.hs "files.txt"
+* To run from ./share:
+
+share/ $ runhaskell -i../src ../src/Course/FileIO.hs files.txt
 ============ a.txt
 the contents of a
 
