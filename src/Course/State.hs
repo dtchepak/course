@@ -223,4 +223,5 @@ isHappy ::
   Integer
   -> Bool
 isHappy =
-  error "todo: Course.State#isHappy"
+  let sumSqs = toInteger . sum . map (join (*) . digitToInt) . show'
+  in contains 1 . firstRepeat . produce sumSqs
