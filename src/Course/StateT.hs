@@ -244,10 +244,6 @@ instance Applicative f => Applicative (OptionalT f) where
   pure =
     OptionalT . pure . pure
 
-maybe :: b -> (a -> b) -> Optional a -> b
-maybe x _ Empty = x
-maybe _ f (Full x) = f x
-
 -- | Implement the `Bind` instance for `OptionalT f` given a Monad f.
 --
 -- >>> runOptionalT $ (\a -> OptionalT (Full (a+1) :. Full (a+2) :. Nil)) =<< OptionalT (Full 1 :. Empty :. Nil)

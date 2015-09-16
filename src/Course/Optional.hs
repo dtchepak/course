@@ -55,3 +55,9 @@ instance P.Monad Optional where
     flip bindOptional
   return =
     Full
+
+-- My extra functions
+maybe :: b -> (a -> b) -> Optional a -> b
+maybe x _ Empty = x
+maybe _ f (Full x) = f x
+
