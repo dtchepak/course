@@ -179,7 +179,7 @@ firstRepeat ::
   List a
   -> Optional a
 firstRepeat =
-  flip eval S.empty . findM (\x -> get >>= \s -> x `S.member` s <$ put (x `S.insert` s))
+  flip eval S.empty . findM (with S.member)
 
 -- | Remove all duplicate elements in a `List`.
 -- /Tip:/ Use `filtering` and `State` with a @Data.Set#Set@.
@@ -192,7 +192,11 @@ distinct ::
   List a
   -> List a
 distinct =
-  flip eval S.empty . filtering (\x -> get >>= \s -> x `S.notMember` s <$ put (x `S.insert` s))
+  flip eval S.empty . filtering (with S.notMember)
+
+with :: Ord a => (a -> S.Set a -> b) -> a -> State (S.Set a) b
+with f x =
+    get >>= \s -> f x s <$ put (x `S.insert` s)
 
 -- | A happy number is a positive integer, where the sum of the square of its digits eventually reaches 1 after repetition.
 -- In contrast, a sad number (not a happy number) is where the sum of the square of its digits never reaches 1
