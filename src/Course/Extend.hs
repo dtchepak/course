@@ -68,8 +68,7 @@ instance Extend Optional where
     (Optional a -> b)
     -> Optional a
     -> Optional b
-  (<<=) =
-    error "todo: Course.Extend (<<=)#instance Optional"
+  f <<= a = f . Full <$> a
 
 -- | Duplicate the functor using extension.
 --
@@ -89,4 +88,4 @@ cojoin ::
   f a
   -> f (f a)
 cojoin =
-  error "todo: Course.Extend#cojoin"
+  (<<=) id
