@@ -5,9 +5,9 @@
 module Course.Traversable where
 
 import Course.Functor
-import Course.Apply
 import Course.Applicative
 import Course.List
+import Course.Core ((.))
 
 -- | All instances of the `Traversable` type-class must satisfy two laws. These
 -- laws are not checked by the compiler. These laws are given as:
@@ -34,4 +34,4 @@ instance Traversable List where
     -> List a
     -> f (List b)
   traverse f =
-    foldRight (\a b -> (:.) <$> f a <*> b) (pure Nil)
+    sequence . (<$>) f
