@@ -283,7 +283,11 @@ satisfy ::
   (Char -> Bool)
   -> Parser Char
 satisfy p =
-  character >>= \c -> if p c then valueParser c else unexpectedCharParser c
+  character >>= (lift3 iff valueParser unexpectedCharParser p)
+
+iff :: x -> x -> Bool -> x
+iff t _ False = t
+iff _ f True  = f
 
 -- | Return a parser that produces the given character but fails if
 --
