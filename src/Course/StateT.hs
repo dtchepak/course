@@ -3,6 +3,7 @@
 {-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE RebindableSyntax #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TupleSections #-}
 
 module Course.StateT where
 
@@ -306,6 +307,12 @@ log1 ::
 log1 =
   Logger . (:.Nil)
 
+liftLogger :: Logger l a -> StateT s (OptionalT (Logger l)) a
+liftLogger (Logger l a) = StateT $ OptionalT . Logger l . Full . (a,)
+
+liftOptional :: Optional a -> StateT s (OptionalT (Logger l)) a
+liftOptional o = StateT $ \s -> OptionalT (pure ((,s) <$> o))
+
 -- | Remove all duplicate integers from a list. Produce a log as you go.
 -- If there is an element above 100, then abort the entire computation and produce no result.
 -- However, always keep a log. If you abort the computation, produce a log with the value,
@@ -325,4 +332,15 @@ distinctG ::
   List a
   -> Logger Chars (Optional (List a))
 distinctG =
-  error "todo: Course.StateT#distinctG"
+    let log = liftLogger . flip log1 ()
+        logIf p = if p then log else const (pure ())
+    in runOptionalT . flip evalT S.empty . filtering (\x ->
+        getT >>= \s ->
+            if x > 100
+            then log ("aborting > 100: " ++ show' x) *> liftOptional Empty
+            else x `S.notMember` s
+                 <$ putT (x `S.insert` s)
+                 <* logIf (even x) ("even number: " ++ show' x)
+    )
+-- StateT (Set a) (OptionalT (Logger Chars)) a
+-- Logger Chars (Optional (State (Set a) a))
