@@ -76,7 +76,7 @@ headOr ::
   -> List a
   -> a
 headOr =
-  error "todo: Course.List#headOr"
+  foldRight const
 
 -- | The product of the elements of a list.
 --
@@ -89,7 +89,7 @@ product ::
   List Int
   -> Int
 product =
-  error "todo: Course.List#product"
+  foldLeft (*) 1
 
 -- | Sum the elements of the list.
 --
@@ -104,7 +104,7 @@ sum ::
   List Int
   -> Int
 sum =
-  error "todo: Course.List#sum"
+  foldLeft (+) 0
 
 -- | Return the length of the list.
 --
@@ -116,7 +116,7 @@ length ::
   List a
   -> Int
 length =
-  error "todo: Course.List#length"
+  foldLeft (const . succ) 0
 
 -- | Map the given function on each element of the list.
 --
@@ -130,8 +130,8 @@ map ::
   (a -> b)
   -> List a
   -> List b
-map =
-  error "todo: Course.List#map"
+map f =
+  foldRight ((:.) . f) Nil
 
 -- | Return elements satisfying the given predicate.
 --
@@ -147,8 +147,8 @@ filter ::
   (a -> Bool)
   -> List a
   -> List a
-filter =
-  error "todo: Course.List#filter"
+filter p =
+  foldRight (\a -> if p a then (a:.) else id) Nil
 
 -- | Append two lists to a new list.
 --
@@ -167,7 +167,7 @@ filter =
   -> List a
   -> List a
 (++) =
-  error "todo: Course.List#(++)"
+  flip (foldRight (:.))
 
 infixr 5 ++
 
@@ -185,7 +185,7 @@ flatten ::
   List (List a)
   -> List a
 flatten =
-  error "todo: Course.List#flatten"
+  foldRight (++) Nil
 
 -- | Map a function then flatten to a list.
 --
@@ -201,8 +201,8 @@ flatMap ::
   (a -> List b)
   -> List a
   -> List b
-flatMap =
-  error "todo: Course.List#flatMap"
+flatMap f =
+  flatten . map f
 
 -- | Flatten a list of lists to a list (again).
 -- HOWEVER, this time use the /flatMap/ function that you just wrote.
@@ -212,7 +212,7 @@ flattenAgain ::
   List (List a)
   -> List a
 flattenAgain =
-  error "todo: Course.List#flattenAgain"
+  flatMap id
 
 -- | Convert a list of optional values to an optional list of values.
 --
@@ -240,7 +240,7 @@ seqOptional ::
   List (Optional a)
   -> Optional (List a)
 seqOptional =
-  error "todo: Course.List#seqOptional"
+  foldRight (twiceOptional (:.)) Empty
 
 -- | Find the first element in the list matching the predicate.
 --
@@ -262,8 +262,8 @@ find ::
   (a -> Bool)
   -> List a
   -> Optional a
-find =
-  error "todo: Course.List#find"
+find p =
+  headOr Empty . map Full . filter p 
 
 -- | Determine if the length of the given list is greater than 4.
 --
