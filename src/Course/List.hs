@@ -240,7 +240,7 @@ seqOptional ::
   List (Optional a)
   -> Optional (List a)
 seqOptional =
-  foldRight (twiceOptional (:.)) Empty
+  foldRight (twiceOptional (:.)) (Full Nil)
 
 -- | Find the first element in the list matching the predicate.
 --
@@ -281,8 +281,8 @@ find p =
 lengthGT4 ::
   List a
   -> Bool
-lengthGT4 =
-  error "todo: Course.List#lengthGT4"
+lengthGT4 (_:._:._:._:._) = True
+lengthGT4 (_) = False
 
 -- | Reverse a list.
 --
@@ -299,7 +299,7 @@ reverse ::
   List a
   -> List a
 reverse =
-  error "todo: Course.List#reverse"
+  foldLeft (flip (:.)) Nil
 
 -- | Produce an infinite `List` that seeds with the given value at its head,
 -- then runs the given function for subsequent elements
@@ -313,8 +313,8 @@ produce ::
   (a -> a)
   -> a
   -> List a
-produce =
-  error "todo: Course.List#produce"
+produce f z =
+  z :. produce f (f z)
 
 -- | Do anything other than reverse a list.
 -- Is it even possible?
@@ -329,7 +329,7 @@ notReverse ::
   List a
   -> List a
 notReverse =
-  error "todo: Is it even possible?"
+  reverse
 
 ---- End of list exercises
 
