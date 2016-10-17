@@ -2,6 +2,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RebindableSyntax #-}
+{-# LANGUAGE TupleSections #-}
 
 module Course.FileIO where
 
@@ -10,6 +11,7 @@ import Course.Applicative
 import Course.Monad
 import Course.Functor
 import Course.List
+import Course.Traversable
 
 {-
 
@@ -62,7 +64,11 @@ the contents of c
 main ::
   IO ()
 main =
-  error "todo: Course.FileIO#main"
+  getArgs
+  >>= \args ->
+    case args of
+      (path :. Nil) -> run path
+      _ -> putStrLn "Usage: exe [path_to_file]"
 
 type FilePath =
   Chars
@@ -72,30 +78,33 @@ run ::
   Chars
   -> IO ()
 run =
-  error "todo: Course.FileIO#run"
+    printFiles
+    <=< getFiles . lines
+    <=< readFile
 
 getFiles ::
   List FilePath
   -> IO (List (FilePath, Chars))
 getFiles =
-  error "todo: Course.FileIO#getFiles"
+  traverse getFile
 
 getFile ::
   FilePath
   -> IO (FilePath, Chars)
-getFile =
-  error "todo: Course.FileIO#getFile"
+getFile path =
+  (path,) <$> readFile path
 
 printFiles ::
   List (FilePath, Chars)
   -> IO ()
 printFiles =
-  error "todo: Course.FileIO#printFiles"
+  void . traverse (uncurry printFile)
 
 printFile ::
   FilePath
   -> Chars
   -> IO ()
-printFile =
-  error "todo: Course.FileIO#printFile"
+printFile f c =
+  putStrLn ("============ " ++ f)
+  *> putStrLn c
 
