@@ -1,0 +1,2 @@
+#! /bin/sh
+stack exec ghci src/Course.hs
