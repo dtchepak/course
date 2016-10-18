@@ -14,6 +14,7 @@ import Course.Monad
 import Course.List
 import Course.Optional
 import Data.Char
+import Data.Bool (bool)
 
 -- $setup
 -- >>> :set -XOverloadedStrings
@@ -280,7 +281,7 @@ satisfy ::
   (Char -> Bool)
   -> Parser Char
 satisfy p =
-  character >>= \c -> if p c then valueParser c else unexpectedCharParser c
+  character >>= lift3 bool unexpectedCharParser valueParser p
 
 -- | Return a parser that produces the given character but fails if
 --
