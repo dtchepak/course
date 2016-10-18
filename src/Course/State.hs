@@ -14,6 +14,8 @@ import Course.Functor
 import Course.Applicative
 import Course.Monad
 import qualified Data.Set as S
+import Data.Char (digitToInt)
+import Data.Bool (bool)
 
 -- $setup
 -- >>> import Test.QuickCheck.Function
@@ -116,7 +118,7 @@ eval sa =
 get ::
   State s s
 get =
-  error "todo: Course.State#get"
+  State (\s -> (s,s))
 
 -- | A `State` where the resulting state is seeded with the given value.
 --
@@ -148,9 +150,7 @@ findM ::
   -> List a
   -> f (Optional a)
 findM p =
-  (<$>) (find (const True)) . filtering p
-  -- foldRight (\a acc -> (\b -> if b then const (Full a) else id) <$> p a <*> acc) (pure Empty)
-  -- foldRight (\a acc -> p a >>= (\b -> if b then pure (Full a) else acc)) (pure Empty)
+  foldRight (\a acc -> p a >>= (\b -> if b then pure (Full a) else acc)) (pure Empty)
 
 -- | Find the first element in a `List` that repeats.
 -- It is possible that no element repeats, hence an `Optional` result.
@@ -164,7 +164,8 @@ firstRepeat ::
   List a
   -> Optional a
 firstRepeat =
-  error "todo: Course.State#firstRepeat"
+  flip eval S.empty . findM (\a ->
+    State (\s -> (a `S.member` s, a `S.insert` s)))
 
 -- | Remove all duplicate elements in a `List`.
 -- /Tip:/ Use `filtering` and `State` with a @Data.Set#Set@.
@@ -177,7 +178,9 @@ distinct ::
   List a
   -> List a
 distinct =
-  error "todo: Course.State#distinct"
+  flip eval S.empty . filtering (\a ->
+    State (\s -> (a `S.notMember` s, a `S.insert` s))
+  )
 
 -- | A happy number is a positive integer, where the sum of the square of its digits eventually reaches 1 after repetition.
 -- In contrast, a sad number (not a happy number) is where the sum of the square of its digits never reaches 1
@@ -204,4 +207,10 @@ isHappy ::
   Integer
   -> Bool
 isHappy =
-  error "todo: Course.State#isHappy"
+  let digits = unfoldr $ \a ->
+                let (d,r) = a `divMod` 10
+                in bool (Full (r,d)) Empty (a==0)
+      sq = join (*)
+      sum' = foldLeft (+) 0
+  in contains 1 . firstRepeat . produce (sum' . (<$>) sq . digits)
+
