@@ -27,6 +27,9 @@ class Functor f where
 
 infixl 4 <$>
 
+fmap :: Functor f => (a -> b) -> f a -> f b
+fmap = (<$>)
+
 -- $setup
 -- >>> :set -XOverloadedStrings
 -- >>> import Course.Core
