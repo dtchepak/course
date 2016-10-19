@@ -22,6 +22,10 @@ bindOptional :: (a -> Optional b) -> Optional a -> Optional b
 bindOptional _ Empty    = Empty
 bindOptional f (Full a) = f a
 
+foldOptional :: (a -> b) -> b -> Optional a -> b
+foldOptional _ z Empty = z
+foldOptional f _ (Full x) = f x
+
 (??) :: Optional a -> a -> a
 Empty ?? d  = d
 Full a ?? _ = a
