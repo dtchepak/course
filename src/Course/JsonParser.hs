@@ -80,7 +80,7 @@ toSpecialCharacter c =
               ('\\', Backslash) :.
               Nil
   in snd <$> find ((==) c . fst) table
-  
+
 -- | Parse a JSON string. Handle double-quotes, special characters, hexadecimal characters. See http://json.org for the full list of control characters in JSON.
 --
 -- /Tip:/ Use `hex`, `fromSpecialCharacter`, `between`, `is`, `charTok`, `toSpecialCharacter`.
@@ -117,8 +117,8 @@ jsonString =
                             Empty -> unexpectedCharParser c
                             Full sc -> pure (fromSpecialCharacter sc)
     ctrl = is '\\' *> (hexu ||| special)
-    anyOther = noneof "\"\\"
-  in between quote quote (list (ctrl ||| anyOther))
+    nonCtrl = noneof "\"\\"
+  in between (is '"') (charTok '"') (list (nonCtrl ||| ctrl))
 
 -- | Parse a JSON rational.
 --
@@ -250,13 +250,15 @@ jsonObject =
 jsonValue ::
   Parser JsonValue
 jsonValue =
-   JsonString <$> jsonString
+   spaces *>
+   (JsonString <$> jsonString
     ||| JsonRational False <$> jsonNumber
     ||| JsonObject         <$> jsonObject
     ||| JsonArray          <$> jsonArray
     ||| JsonTrue           <$  jsonTrue
     ||| JsonFalse          <$  jsonFalse
     ||| JsonNull           <$  jsonNull
+   )
 
 -- | Read a file into a JSON value.
 --
@@ -264,5 +266,6 @@ jsonValue =
 readJsonValue ::
   Filename
   -> IO (ParseResult JsonValue)
-readJsonValue =
-  error "todo: Course.JsonParser#readJsonValue"
+readJsonValue f =
+  parse jsonValue <$> readFile f
+

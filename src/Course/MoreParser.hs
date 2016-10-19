@@ -416,4 +416,4 @@ betweenSepbyComma ::
   -> Parser a
   -> Parser (List a)
 betweenSepbyComma s e p =
-  betweenCharTok s e (sepby p (charTok 'c'))
+  betweenCharTok s e (sepby p commaTok)
