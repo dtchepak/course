@@ -14,6 +14,7 @@ import Course.Applicative
 import Course.Monad
 import Course.List
 import Course.Optional
+import Data.Tuple (swap)
 
 -- $setup
 -- >>> :set -XOverloadedStrings
@@ -146,7 +147,7 @@ jsonString =
 jsonNumber ::
   Parser Rational
 jsonNumber =
-  error "todo: Course.JsonParser#jsonNumber"
+  P $ foldOptional (uncurry Result . swap) (ErrorResult Failed) . readFloats
 
 -- | Parse a JSON true literal.
 --
@@ -160,7 +161,7 @@ jsonNumber =
 jsonTrue ::
   Parser Chars
 jsonTrue =
-  error "todo: Course.JsonParser#jsonTrue"
+  stringTok "true"
 
 -- | Parse a JSON false literal.
 --
@@ -174,7 +175,7 @@ jsonTrue =
 jsonFalse ::
   Parser Chars
 jsonFalse =
-  error "todo: Course.JsonParser#jsonFalse"
+  stringTok "false"
 
 -- | Parse a JSON null literal.
 --
@@ -188,7 +189,7 @@ jsonFalse =
 jsonNull ::
   Parser Chars
 jsonNull =
-  error "todo: Course.JsonParser#jsonNull"
+  stringTok "null"
 
 -- | Parse a JSON array.
 --
@@ -211,7 +212,7 @@ jsonNull =
 jsonArray ::
   Parser (List JsonValue)
 jsonArray =
-  error "todo: Course.JsonParser#jsonArray"
+  betweenSepbyComma '[' ']' jsonValue
 
 -- | Parse a JSON object.
 --
@@ -231,7 +232,8 @@ jsonArray =
 jsonObject ::
   Parser Assoc
 jsonObject =
-  error "todo: Course.JsonParser#jsonObject"
+  let nameValue = (,) <$> jsonString <* charTok ':' <*> jsonValue
+  in betweenSepbyComma '{' '}' nameValue
 
 -- | Parse a JSON value.
 --
@@ -248,7 +250,13 @@ jsonObject =
 jsonValue ::
   Parser JsonValue
 jsonValue =
-   error "todo: Course.JsonParser#jsonValue"
+   JsonString <$> jsonString
+    ||| JsonRational False <$> jsonNumber
+    ||| JsonObject         <$> jsonObject
+    ||| JsonArray          <$> jsonArray
+    ||| pure JsonTrue      <*  jsonTrue
+    ||| pure JsonFalse     <*  jsonFalse
+    ||| pure JsonNull      <*  jsonNull
 
 -- | Read a file into a JSON value.
 --
