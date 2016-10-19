@@ -254,9 +254,9 @@ jsonValue =
     ||| JsonRational False <$> jsonNumber
     ||| JsonObject         <$> jsonObject
     ||| JsonArray          <$> jsonArray
-    ||| pure JsonTrue      <*  jsonTrue
-    ||| pure JsonFalse     <*  jsonFalse
-    ||| pure JsonNull      <*  jsonNull
+    ||| JsonTrue           <$  jsonTrue
+    ||| JsonFalse          <$  jsonFalse
+    ||| JsonNull           <$  jsonNull
 
 -- | Read a file into a JSON value.
 --
