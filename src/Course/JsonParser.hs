@@ -110,7 +110,14 @@ toSpecialCharacter c =
 jsonString ::
   Parser Chars
 jsonString =
-  error "todo: Course.JsonParser#jsonString"
+  let
+    special = oneof "bfnrtv'\"\\"
+                >>= \c -> case toSpecialCharacter c of
+                            Empty -> unexpectedCharParser c
+                            Full sc -> pure (fromSpecialCharacter sc)
+    ctrl = is '\\' *> (hexu ||| special)
+    anyOther = noneof "\"\\"
+  in between quote quote (list (ctrl ||| anyOther))
 
 -- | Parse a JSON rational.
 --
