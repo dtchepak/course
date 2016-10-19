@@ -33,8 +33,8 @@ instance Extend Id where
     (Id a -> b)
     -> Id a
     -> Id b
-  (<<=) =
-    error "todo: Course.Extend (<<=)#instance Id"
+  f <<= a =
+    Id (f a)
 
 -- | Implement the @Extend@ instance for @List@.
 --
@@ -51,8 +51,9 @@ instance Extend List where
     (List a -> b)
     -> List a
     -> List b
-  (<<=) =
-    error "todo: Course.Extend (<<=)#instance List"
+  _ <<= Nil = Nil
+  f <<= a@(_:.t) =
+    f a :. (f <<= t)
 
 -- | Implement the @Extend@ instance for @Optional@.
 --
@@ -66,8 +67,8 @@ instance Extend Optional where
     (Optional a -> b)
     -> Optional a
     -> Optional b
-  (<<=) =
-    error "todo: Course.Extend (<<=)#instance Optional"
+  f <<= Empty = Empty
+  f <<= Full x = Full (f (Full x))
 
 -- | Duplicate the functor using extension.
 --
@@ -87,4 +88,4 @@ cojoin ::
   f a
   -> f (f a)
 cojoin =
-  error "todo: Course.Extend#cojoin"
+  (<<=) id
