@@ -16,6 +16,10 @@ data Optional a =
   | Empty
   deriving (Eq, Show)
 
+foldOptional :: (a -> b) -> b -> Optional a -> b
+foldOptional f _ (Full x) = f x
+foldOptional _ x Empty    = x
+
 -- | Map the given function on the possible value.
 --
 -- >>> mapOptional (+1) Empty
@@ -27,8 +31,8 @@ mapOptional ::
   (a -> b)
   -> Optional a
   -> Optional b
-mapOptional =
-  error "todo: Course.Optional#mapOptional"
+mapOptional f =
+  bindOptional (Full . f)
 
 -- | Bind the given function on the possible value.
 --
@@ -44,8 +48,7 @@ bindOptional ::
   (a -> Optional b)
   -> Optional a
   -> Optional b
-bindOptional =
-  error "todo: Course.Optional#bindOptional"
+bindOptional f = foldOptional f Empty
 
 -- | Return the possible value if it exists; otherwise, the second argument.
 --
@@ -59,7 +62,7 @@ bindOptional =
   -> a
   -> a
 (??) =
-  error "todo: Course.Optional#(??)"
+  flip (foldOptional id)
 
 -- | Try the first optional for a value. If it has a value, use it; otherwise,
 -- use the second value.
@@ -80,7 +83,7 @@ bindOptional =
   -> Optional a
   -> Optional a
 (<+>) =
-  error "todo: Course.Optional#(<+>)"  
+  flip (foldOptional Full)
 
 applyOptional :: Optional (a -> b) -> Optional a -> Optional b
 applyOptional f a = bindOptional (\f' -> mapOptional f' a) f
