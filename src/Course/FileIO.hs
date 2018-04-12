@@ -96,7 +96,7 @@ printFiles ::
   List (FilePath, Chars)
   -> IO ()
 printFiles =
-  void . sequence . (<$>) (uncurry printFile)
+  myTraverse_ (uncurry printFile)
 
 -- Given a file name, return (file name and file contents).
 -- Use @readFile@.
@@ -112,7 +112,7 @@ getFiles ::
   List FilePath
   -> IO (List (FilePath, Chars))
 getFiles =
-  sequence . (<$>) getFile
+  myTraverse getFile
 
 -- Given a file name, read it and for each line in that file, read and print contents of each.
 -- Use @getFiles@ and @printFiles@.
@@ -127,7 +127,7 @@ run =
 main ::
   IO ()
 main =
-  getArgs >>= void . sequence . ((<$>) run)
+  getArgs >>= myTraverse_ run
 
 ----
 
@@ -135,3 +135,8 @@ main =
 -- ? `sequence . (<$>)`
 -- ? `void . sequence . (<$>)`
 -- Factor it out.
+myTraverse :: Applicative f => (a -> f b) -> List a -> f (List b)
+myTraverse f = sequence . (<$>) f
+
+myTraverse_ :: Applicative f => (a -> f b) -> List a -> f ()
+myTraverse_ f = void . myTraverse f
