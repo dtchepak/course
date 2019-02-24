@@ -317,7 +317,7 @@ produce ::
   (a -> a)
   -> a
   -> List a
-produce f x = x :. produce f (f x) -- TODO!!!! IS THIS MEANT TO HAVE SOLN ALREADY?
+produce f x = x :. produce f (f x)
 
 -- | Do anything other than reverse a list.
 -- Is it even possible?
