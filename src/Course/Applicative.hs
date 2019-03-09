@@ -382,8 +382,12 @@ filtering ::
   (a -> f Bool)
   -> List a
   -> f (List a)
-filtering =
-  error "todo: Course.Applicative#filtering"
+filtering p =
+    let consIf b = if b then (:.) else flip const
+    in foldRight (\x acc ->
+        consIf <$> p x <*> pure x <*> acc
+    ) (pure Nil)
+
 
 -----------------------
 -- SUPPORT LIBRARIES --
